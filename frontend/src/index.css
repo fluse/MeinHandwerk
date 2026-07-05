@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Marke / Basis (aus Vorlage: C) */
+  --color-page: #f4f6f1;
+  --color-card: #ffffff;
+  --color-sage: #6e8b6a;
+  --color-sage-deep: #51684d;
+  --color-sage-text: #3a4a37;
+  --color-ink: #2a2f28;
+  --color-muted: #808a7c;
+  --color-border: #e3e8dd;
+  --color-danger: #b4483c;
+  --color-danger-bg: #f6e4e1;
+
+  /* Rollen-Farben (aus Vorlage: ROLES[k].dot) */
+  --color-role-chef: #51684d;
+  --color-role-buero: #7c7bb0;
+  --color-role-monteur: #6e8b6a;
+  --color-role-helfer: #d9a441;
+
+  /* Gewerke (aus Vorlage: TRADES) */
+  --color-trade-heizung: #c0392b;
+  --color-trade-heizung-fg: #ffffff;
+  --color-trade-sanitaer: #2e6da4;
+  --color-trade-sanitaer-fg: #ffffff;
+  --color-trade-elektro: #e6b10a;
+  --color-trade-elektro-fg: #3a2f00;
+  --color-trade-klima: #3f9e5b;
+  --color-trade-klima-fg: #ffffff;
+  --color-trade-innenausbau: #ffffff;
+  --color-trade-innenausbau-fg: #2a2f28;
+  --color-trade-innenausbau-border: #d3d9cc;
+  --color-trade-innenausbau-dot: #c9cfc0;
+  --color-trade-besichtigung: #e67e22;
+  --color-trade-besichtigung-fg: #ffffff;
+  --color-trade-urlaub: #7e57c2;
+  --color-trade-urlaub-fg: #ffffff;
+  --color-trade-krank: #9aa0a6;
+  --color-trade-krank-fg: #ffffff;
+
+  /* Auftragsstatus (aus Vorlage: STATUS) */
+  --color-status-offen-fg: #b8791c;
+  --color-status-offen-bg: #f6ecd8;
+  --color-status-erledigt-fg: #4e8c57;
+  --color-status-erledigt-bg: #e2f0e4;
+
+  /* Projektstatus (aus Vorlage: PSTATUS) */
+  --color-pstatus-offen-fg: #b8791c;
+  --color-pstatus-offen-bg: #f6ecd8;
+  --color-pstatus-eingeplant-fg: #3e6e9e;
+  --color-pstatus-eingeplant-bg: #e1ebf3;
+  --color-pstatus-erledigt-fg: #4e8c57;
+  --color-pstatus-erledigt-bg: #e2f0e4;
+
+  /* Pinnwand-Kategorien (aus Vorlage: CATS) */
+  --color-cat-werkzeug: #b8791c;
+  --color-cat-sauberkeit: #3f9e5b;
+  --color-cat-frage: #2e6da4;
+  --color-cat-info: #6e8b6a;
+  --color-cat-lob: #c0392b;
+  --color-cat-fahrzeug: #7c7bb0;
+
+  /* Event-Typen (aus Vorlage: ETYPES) */
+  --color-etype-fest: #c0392b;
+  --color-etype-feier: #3f9e5b;
+  --color-etype-schulung: #2e6da4;
+  --color-etype-info: #6e8b6a;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  background-color: var(--color-page);
+  color: var(--color-ink);
+}

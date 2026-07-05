@@ -1,0 +1,22 @@
+services:
+  pocketbase:
+    build:
+      context: ./backend
+    ports:
+      - '8090:8090'
+    volumes:
+      - ./backend/pb_data:/pb/pb_data
+      - ./backend/pb_migrations:/pb/pb_migrations
+      - ./backend/pb_hooks:/pb/pb_hooks
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_POCKETBASE_URL: ${VITE_POCKETBASE_URL:-http://localhost:8090}
+    ports:
+      - '80:80'
+    depends_on:
+      - pocketbase
+    restart: unless-stopped
