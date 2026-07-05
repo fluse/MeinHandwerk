@@ -17,7 +17,10 @@ export function AppLayout() {
   return (
     <div className="flex min-h-dvh flex-col bg-page">
       <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-3">
-        <span className="flex min-w-0 items-center gap-2 truncate text-base font-semibold text-ink">
+        <Link
+          to="/"
+          className="flex min-w-0 items-center gap-2 truncate text-base font-semibold text-ink no-underline"
+        >
           {companySettings?.logoUrl && (
             <img
               src={companySettings.logoUrl}
@@ -26,7 +29,7 @@ export function AppLayout() {
             />
           )}
           <span className="truncate">{companySettings?.companyName ?? 'Handwerkerkalender'}</span>
-        </span>
+        </Link>
         {user && (
           <div className="flex flex-none items-center gap-3">
             {canPlan && (

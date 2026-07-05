@@ -6,6 +6,7 @@ import {
   Clock,
   Flag,
   Folder,
+  ListChecks,
   type LucideIcon,
   MoreHorizontal,
   Pin,
@@ -43,6 +44,12 @@ const TABS: Tab[] = [
   { to: '/pinboard', label: 'Pinnwand', icon: Pin, match: (p) => p.startsWith('/pinboard') },
   { to: '/events', label: 'Events', icon: Flag, match: (p) => p.startsWith('/events') },
   { to: '/vehicles', label: 'Fahrzeuge', icon: Car, match: (p) => p.startsWith('/vehicles') },
+  {
+    to: '/auftraege',
+    label: 'Aufträge',
+    icon: ListChecks,
+    match: (p) => p.startsWith('/auftraege'),
+  },
 ]
 
 const PRIMARY_COUNT = 4

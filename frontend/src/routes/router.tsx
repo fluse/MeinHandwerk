@@ -4,9 +4,10 @@ import { SettingsLayout } from '@/core/layout/SettingsLayout'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { TeamPage } from '@/features/team/pages/TeamPage'
 import { GeneralSettingsPage } from '@/features/settings/pages/GeneralSettingsPage'
+import { DayBoardPage } from '@/features/scheduling/pages/DayBoardPage'
 import { WeekPage } from '@/features/scheduling/pages/WeekPage'
+import { OrdersListPage } from '@/features/scheduling/pages/OrdersListPage'
 import { EmployeeWeekPage } from '@/features/scheduling/pages/EmployeeWeekPage'
-import { DayPage } from '@/features/scheduling/pages/DayPage'
 import { OrderFormPage } from '@/features/scheduling/pages/OrderFormPage'
 import { CustomersPage } from '@/features/customers/pages/CustomersPage'
 import { CustomerFormPage } from '@/features/customers/pages/CustomerFormPage'
@@ -33,9 +34,10 @@ export const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          { index: true, element: <WeekPage /> },
+          { index: true, element: <DayBoardPage /> },
+          { path: 'week', element: <WeekPage /> },
           { path: 'week/:userId', element: <EmployeeWeekPage /> },
-          { path: 'week/:userId/:date', element: <DayPage /> },
+          { path: 'auftraege', element: <OrdersListPage /> },
           { path: 'customers', element: <CustomersPage /> },
           { path: 'projects', element: <ProjectsPage /> },
           { path: 'pinboard', element: <PinboardPage /> },

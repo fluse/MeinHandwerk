@@ -1,7 +1,6 @@
-import { ChevronRight, Lock } from 'lucide-react'
+import { CalendarClock, ChevronRight, ListChecks, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/core/auth/AuthProvider'
-import { RoleIcon } from '@/core/components/RoleIcon'
 import { colorVar } from '@/core/lib/cssVar'
 import { addDays, iso, fmtShort } from '@/core/lib/date'
 import { WD } from '@/core/lib/time'
@@ -25,7 +24,23 @@ export function WeekPage() {
 
   return (
     <div className="pb-16">
-      <h1 className="mb-3 text-lg font-bold text-ink">Einsatzplan</h1>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h1 className="text-lg font-bold text-ink">Wochenübersicht</h1>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/auftraege"
+            className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-sage-deep no-underline"
+          >
+            <ListChecks size={14} /> Liste
+          </Link>
+          <Link
+            to={`/?date=${week}`}
+            className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-sage-deep no-underline"
+          >
+            <CalendarClock size={14} /> Tagesansicht
+          </Link>
+        </div>
+      </div>
       <WeekNav weekStart={weekStart} onChange={setWeekStart} />
 
       {isLoading ? (
@@ -46,7 +61,6 @@ export function WeekPage() {
                   key={m.id}
                   className="flex flex-col items-center justify-center gap-1 border-b border-r border-border bg-[#9AA0A6] p-1.5 text-white"
                 >
-                  <RoleIcon role={m.role} size={22} />
                   <span className="text-center text-xs font-bold leading-tight">{m.name}</span>
                   <Lock size={11} className="opacity-85" />
                 </div>
@@ -56,7 +70,6 @@ export function WeekPage() {
                   to={`/week/${m.id}?week=${week}`}
                   className="flex flex-col items-center justify-center gap-1 border-b border-r border-border bg-sage p-1.5 text-white no-underline"
                 >
-                  <RoleIcon role={m.role} size={22} />
                   <span className="text-center text-xs font-bold leading-tight">{m.name}</span>
                   <span className="flex items-center text-[9px] font-semibold opacity-85">
                     Woche <ChevronRight size={10} />
@@ -69,10 +82,13 @@ export function WeekPage() {
               const dIso = iso(d)
               return (
                 <div key={dIso} className="contents">
-                  <div className="flex flex-col items-center justify-center border-b border-r border-border bg-page p-1">
+                  <Link
+                    to={`/?date=${dIso}`}
+                    className="flex flex-col items-center justify-center border-b border-r border-border bg-page p-1 no-underline hover:bg-sage/15"
+                  >
                     <span className="text-xs font-extrabold text-sage-deep">{WD[di]}</span>
                     <span className="text-[10px] text-muted">{fmtShort(d)}</span>
-                  </div>
+                  </Link>
                   {roster.map((m) => {
                     if (chefHidden(m.role)) {
                       return (
@@ -88,7 +104,7 @@ export function WeekPage() {
                     return (
                       <Link
                         key={m.id + dIso}
-                        to={`/week/${m.id}/${dIso}?week=${week}`}
+                        to={`/?date=${dIso}`}
                         className="block border-b border-r border-border bg-card p-1 align-top no-underline"
                       >
                         {dayOrders.map((o) => (
@@ -124,8 +140,9 @@ export function WeekPage() {
         ))}
       </div>
       <p className="mt-2 text-xs text-muted">
-        Tipp: Auf einen <b>Tag</b> tippen öffnet die Stundenblöcke. Auf einen <b>Namen</b> tippen
-        zeigt die Woche nur für diesen Mitarbeiter.
+        Tipp: Auf ein <b>Datum</b> oder eine <b>Zelle</b> tippen öffnet den Einsatzplan für alle
+        Mitarbeiter an diesem Tag. Auf einen <b>Namen</b> tippen zeigt die Woche nur für diesen
+        Mitarbeiter.
       </p>
     </div>
   )

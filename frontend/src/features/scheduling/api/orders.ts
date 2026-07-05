@@ -39,6 +39,15 @@ export async function listOrdersInRange(fromISO: string, toISO: string): Promise
   return records.map(toOrder)
 }
 
+/** Alle Aufträge unabhängig vom Datum – für die kalenderfreie Auftragsliste. */
+export async function listOrders(): Promise<Order[]> {
+  const records = await pb.collection('orders').getFullList({
+    sort: 'date,from',
+    expand: 'customer',
+  })
+  return records.map(toOrder)
+}
+
 export async function getOrder(id: string): Promise<Order> {
   return toOrder(await pb.collection('orders').getOne(id, { expand: 'customer' }))
 }

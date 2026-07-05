@@ -1,14 +1,21 @@
-export const BLOCKS: Array<[string, string]> = [
-  ['06', '08'],
-  ['08', '10'],
-  ['10', '12'],
-  ['12', '14'],
-  ['14', '16'],
-  ['16', '18'],
-  ['18', '20'],
-]
-
 export const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+
+/** Zeitstrahl-Grenzen für die Tagesansichten: 06:00–20:00, 46px pro Stunde. */
+export const DAY_START_HOUR = 6
+export const DAY_END_HOUR = 20
+export const PIXELS_PER_HOUR = 46
+
+/** Formatiert eine Stunden-Fließkommazahl (z. B. 8.5) als "HH:MM", begrenzt auf [h0, h1]. */
+export function formatHour(value: number, h0 = DAY_START_HOUR, h1 = DAY_END_HOUR): string {
+  const clamped = Math.max(h0, Math.min(h1, value))
+  let h = Math.floor(clamped)
+  let m = Math.round((clamped - h) * 60)
+  if (m === 60) {
+    h++
+    m = 0
+  }
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
 
 /** Stunden zwischen zwei "HH:MM"-Zeiten, mit Wrap über Mitternacht. */
 export function hoursBetween(von?: string, bis?: string): number {
