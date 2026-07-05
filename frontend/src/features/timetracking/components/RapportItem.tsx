@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PenLine } from 'lucide-react'
+import { PenLine, Trash2 } from 'lucide-react'
 import { Button } from '@/core/components/Button'
 import { ConfirmDialog } from '@/core/components/ConfirmDialog'
 import { useRapportMaterials } from '../hooks/useRapportMaterials'
@@ -84,8 +84,13 @@ export function RapportItem({ rapport: r, canEdit, onEdit, onDelete }: RapportIt
               <Button variant="secondary" className="flex-1" onClick={onEdit}>
                 Bearbeiten
               </Button>
-              <Button variant="danger" className="flex-1" onClick={() => setConfirmDelete(true)}>
-                Löschen
+              <Button
+                variant="danger"
+                onClick={() => setConfirmDelete(true)}
+                title="Rapport löschen"
+                aria-label="Rapport löschen"
+              >
+                <Trash2 size={16} />
               </Button>
             </div>
           )}

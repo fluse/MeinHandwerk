@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2, MessageCircle, Pin, ThumbsUp } from 'lucide-react'
+import { CheckCircle2, MessageCircle, Pin, ThumbsUp, Trash2 } from 'lucide-react'
 import { RoleIcon } from '@/core/components/RoleIcon'
 import { ConfirmDialog } from '@/core/components/ConfirmDialog'
 import { colorVar } from '@/core/lib/cssVar'
@@ -137,9 +137,11 @@ export function PostCard({ post: p, roster, currentUserId, canPlan, onDelete }: 
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
-            className="text-xs font-bold text-danger"
+            title="Beitrag löschen"
+            aria-label="Beitrag löschen"
+            className="text-danger"
           >
-            Löschen
+            <Trash2 size={16} />
           </button>
         )}
       </div>

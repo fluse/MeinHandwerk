@@ -106,11 +106,6 @@ export function CustomerForm({ customer, onDone, onCancel }: CustomerFormProps) 
         </div>
       </div>
 
-      <p className="mb-3 text-xs text-muted">
-        Koordinaten für die Fahrzeug-Karte werden beim Speichern automatisch aus der Adresse
-        ermittelt.
-      </p>
-
       <div className="mb-3 flex flex-col gap-1">
         <label className="text-xs font-medium text-muted" htmlFor="phone">
           Telefon

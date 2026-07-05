@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Trash2 } from 'lucide-react'
 import { ConfirmDialog } from '@/core/components/ConfirmDialog'
 import { colorVar } from '@/core/lib/cssVar'
 import { fmtLong } from '@/core/lib/date'
@@ -50,9 +50,11 @@ export function EventCard({
           <button
             type="button"
             onClick={() => setConfirmDelete(true)}
-            className="text-xs font-bold text-danger"
+            title="Event löschen"
+            aria-label="Event löschen"
+            className="text-danger"
           >
-            Löschen
+            <Trash2 size={16} />
           </button>
         )}
       </div>

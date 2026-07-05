@@ -7,9 +7,11 @@ import {
   ClipboardList,
   FileText,
   MapPin,
+  Navigation,
   Phone,
   Plus,
   StickyNote,
+  Trash2,
   User,
   Wrench,
   X,
@@ -66,6 +68,9 @@ export function OrderCard({
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const isAssignedToMe = order.assigned.includes(currentUserId)
+  const mapsHref = order.address
+    ? `https://maps.google.com/?q=${encodeURIComponent(order.address)}`
+    : undefined
 
   useEffect(() => {
     if (isOpen && isAssignedToMe && !reads[currentUserId]) {
@@ -222,8 +227,18 @@ export function OrderCard({
               </Button>
             )}
           </div>
-          <div className="mt-2">
-            <Button variant="secondary" className="w-full" onClick={onRapport}>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {mapsHref && (
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => window.open(mapsHref, '_blank')}
+              >
+                <Navigation size={16} className="mr-1.5 inline-block align-text-bottom" />
+                Navigation
+              </Button>
+            )}
+            <Button variant="secondary" className="flex-1" onClick={onRapport}>
               <FileText size={16} className="mr-1.5 inline-block align-text-bottom" />
               Arbeitsrapport
             </Button>
@@ -284,8 +299,13 @@ export function OrderCard({
                 <Button variant="secondary" className="flex-1" onClick={onEdit}>
                   Bearbeiten
                 </Button>
-                <Button variant="danger" className="flex-1" onClick={() => setConfirmDelete(true)}>
-                  Löschen
+                <Button
+                  variant="danger"
+                  onClick={() => setConfirmDelete(true)}
+                  title="Auftrag löschen"
+                  aria-label="Auftrag löschen"
+                >
+                  <Trash2 size={16} />
                 </Button>
               </div>
             </>

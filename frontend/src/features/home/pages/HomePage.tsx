@@ -4,7 +4,7 @@ import { ArrowRight, Car } from 'lucide-react'
 import { useAuth } from '@/core/auth/AuthProvider'
 import { useRoster } from '@/core/hooks/useRoster'
 import { Button } from '@/core/components/Button'
-import { fmtLong, todayISO } from '@/core/lib/date'
+import { addDays, fmtLong, iso, todayISO } from '@/core/lib/date'
 import { useOrders } from '@/features/scheduling/hooks/useOrders'
 import { useDeleteOrder } from '@/features/scheduling/hooks/useOrderMutations'
 import { OrderCard } from '@/features/scheduling/components/OrderCard'
@@ -50,16 +50,41 @@ export function HomePage() {
   const { user, canPlan } = useAuth()
   const { data: roster = [] } = useRoster()
   const today = todayISO()
+  const tomorrow = iso(addDays(new Date(), 1))
   const userId = user?.id ?? ''
 
-  const { data: dayOrders = [], isLoading: ordersLoading } = useOrders(today, today)
-  const myOrders = dayOrders.filter((o) => o.assigned.includes(userId))
+  const { data: rangeOrders = [], isLoading: ordersLoading } = useOrders(today, tomorrow)
+  const myOrders = rangeOrders.filter((o) => o.assigned.includes(userId))
+  const myOrdersToday = myOrders.filter((o) => o.date === today)
+  const myOrdersTomorrow = myOrders.filter((o) => o.date === tomorrow)
   const deleteOrder = useDeleteOrder()
   const [openOrderIds, setOpenOrderIds] = useState<string[]>([])
   const [notifyOrder, setNotifyOrder] = useState<Order | null>(null)
   const [completeOrder, setCompleteOrder] = useState<Order | null>(null)
   const toggleOrderOpen = (id: string) =>
     setOpenOrderIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
+
+  const renderOrders = (list: Order[], emptyText: string) =>
+    list.length === 0 ? (
+      <p className="mb-3 text-sm text-muted">{emptyText}</p>
+    ) : (
+      list.map((o) => (
+        <OrderCard
+          key={o.id}
+          order={o}
+          roster={roster}
+          currentUserId={userId}
+          canPlan={canPlan}
+          isOpen={openOrderIds.includes(o.id)}
+          onToggle={() => toggleOrderOpen(o.id)}
+          onEdit={() => navigate(`/orders/${o.id}/edit`)}
+          onDelete={() => deleteOrder.mutate(o.id)}
+          onNotify={() => setNotifyOrder(o)}
+          onComplete={() => setCompleteOrder(o)}
+          onRapport={() => navigate(`/orders/${o.id}/rapports`)}
+        />
+      ))
+    )
 
   const { data: events = [] } = useEvents()
   const todaysEvents = events.filter((e) => e.date === today)
@@ -88,28 +113,16 @@ export function HomePage() {
       <h1 className="mb-1 text-lg font-bold text-ink">Hallo{user?.name ? `, ${user.name}` : ''}</h1>
       <p className="mb-4 text-sm text-muted capitalize">{fmtLong(today)}</p>
 
-      <Section title="Meine Aufträge heute" action={{ label: 'Einsatzplan', to: '/einsatzplan' }}>
+      <Section title="Meine Aufträge" action={{ label: 'Einsatzplan', to: '/einsatzplan' }}>
         {ordersLoading ? (
           <p className="text-sm text-muted">Aufträge werden geladen…</p>
-        ) : myOrders.length === 0 ? (
-          <p className="text-sm text-muted">Keine Aufträge für heute.</p>
         ) : (
-          myOrders.map((o) => (
-            <OrderCard
-              key={o.id}
-              order={o}
-              roster={roster}
-              currentUserId={userId}
-              canPlan={canPlan}
-              isOpen={openOrderIds.includes(o.id)}
-              onToggle={() => toggleOrderOpen(o.id)}
-              onEdit={() => navigate(`/orders/${o.id}/edit`)}
-              onDelete={() => deleteOrder.mutate(o.id)}
-              onNotify={() => setNotifyOrder(o)}
-              onComplete={() => setCompleteOrder(o)}
-              onRapport={() => navigate(`/orders/${o.id}/rapports`)}
-            />
-          ))
+          <>
+            <div className="mb-1.5 text-xs font-extrabold text-sage-deep">Heute</div>
+            {renderOrders(myOrdersToday, 'Keine Aufträge für heute.')}
+            <div className="mt-3 mb-1.5 text-xs font-extrabold text-sage-deep">Morgen</div>
+            {renderOrders(myOrdersTomorrow, 'Keine Aufträge für morgen.')}
+          </>
         )}
       </Section>
 
