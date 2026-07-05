@@ -1,9 +1,9 @@
-import type { ChangeEventHandler } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, Plus } from 'lucide-react'
 import { ROLE_VALUES, ROLES } from '@/core/lib/roles'
 import { Button } from '@/core/components/Button'
+import { SearchableSelect } from '@/core/components/SearchableSelect'
 import type { RosterMember } from '@/core/api/roster'
 import { useCustomerLookup } from '@/core/hooks/useCustomerLookup'
 import { useCustomerSites } from '@/core/hooks/useCustomerSites'
@@ -42,11 +42,15 @@ export function OrderForm({ orderId, defaultValues, roster, onDone, onCancel }: 
   const customerId = watch('customer')
   const { data: sites = [] } = useCustomerSites(customerId ?? '')
 
-  const { onChange: onCustomerChange, ...customerField } = register('customer')
-  const handleCustomerChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
-    onCustomerChange(e)
+  const customerItems = customers.map((cu) => ({
+    id: cu.id,
+    label: cu.label,
+    subtitle: [cu.address, cu.phone].filter(Boolean).join(' · '),
+  }))
+  const handleCustomerChange = (id: string) => {
+    setValue('customer', id)
     setValue('site', '')
-    const match = customers.find((cu) => cu.id === e.target.value)
+    const match = customers.find((cu) => cu.id === id)
     if (match) {
       if (!getValues('client')) setValue('client', match.label)
       if (!getValues('phone') && match.phone) setValue('phone', match.phone)
@@ -54,10 +58,10 @@ export function OrderForm({ orderId, defaultValues, roster, onDone, onCancel }: 
     }
   }
 
-  const { onChange: onSiteChange, ...siteField } = register('site')
-  const handleSiteChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
-    onSiteChange(e)
-    const match = sites.find((s) => s.id === e.target.value)
+  const siteItems = sites.map((s) => ({ id: s.id, label: s.label, subtitle: s.address }))
+  const handleSiteChange = (id: string) => {
+    setValue('site', id)
+    const match = sites.find((s) => s.id === id)
     if (match) setValue('address', match.address)
   }
 
@@ -144,19 +148,14 @@ export function OrderForm({ orderId, defaultValues, roster, onDone, onCancel }: 
         <label className="text-xs font-medium text-muted" htmlFor="customer">
           Kunde (optional)
         </label>
-        <select
+        <SearchableSelect
           id="customer"
-          className={fieldClass}
-          {...customerField}
+          value={customerId ?? ''}
           onChange={handleCustomerChange}
-        >
-          <option value="">— Kein Kunde / Freitext —</option>
-          {customers.map((cu) => (
-            <option key={cu.id} value={cu.id}>
-              {cu.label}
-            </option>
-          ))}
-        </select>
+          items={customerItems}
+          emptyOptionLabel="— Kein Kunde / Freitext —"
+          searchPlaceholder="Name, Ort, Telefon…"
+        />
       </div>
 
       {customerId && (
@@ -164,14 +163,14 @@ export function OrderForm({ orderId, defaultValues, roster, onDone, onCancel }: 
           <label className="text-xs font-medium text-muted" htmlFor="site">
             Baustelle (optional)
           </label>
-          <select id="site" className={fieldClass} {...siteField} onChange={handleSiteChange}>
-            <option value="">— Kundenadresse verwenden —</option>
-            {sites.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+          <SearchableSelect
+            id="site"
+            value={watch('site') ?? ''}
+            onChange={handleSiteChange}
+            items={siteItems}
+            emptyOptionLabel="— Kundenadresse verwenden —"
+            searchPlaceholder="Bezeichnung, Ort…"
+          />
         </div>
       )}
 

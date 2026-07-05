@@ -32,6 +32,7 @@ export function CustomerCard({
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [editingSite, setEditingSite] = useState<Site | null>(null)
+  const [deletingSite, setDeletingSite] = useState<Site | null>(null)
   const address = [c.street, [c.zip, c.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
 
   const { data: sites = [] } = useSites(open ? c.id : '')
@@ -104,7 +105,7 @@ export function CustomerCard({
                 key={s.id}
                 site={s}
                 onEdit={() => setEditingSite(s)}
-                onDelete={() => deleteSite.mutate(s.id)}
+                onDelete={() => setDeletingSite(s)}
               />
             ))}
             {canPlan && <AddSiteForm customerId={c.id} />}
@@ -157,6 +158,18 @@ export function CustomerCard({
       )}
 
       {editingSite && <EditSiteDialog site={editingSite} onClose={() => setEditingSite(null)} />}
+
+      <ConfirmDialog
+        open={deletingSite != null}
+        title="Baustelle entfernen?"
+        description="Dieser Vorgang kann nicht rückgängig gemacht werden."
+        confirmLabel="Entfernen"
+        onCancel={() => setDeletingSite(null)}
+        onConfirm={() => {
+          if (deletingSite) deleteSite.mutate(deletingSite.id)
+          setDeletingSite(null)
+        }}
+      />
 
       <ConfirmDialog
         open={confirmDelete}
