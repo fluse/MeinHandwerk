@@ -10,6 +10,7 @@ import { useRoster } from '@/core/hooks/useRoster'
 import { useOrders } from '../hooks/useOrders'
 import { useWeekStart } from '../hooks/useWeekStart'
 import { WeekNav } from '../components/WeekNav'
+import { TradeIcon } from '../components/TradeBadge'
 import { TRADES, TRADE_VALUES } from '../types/order'
 
 export function WeekPage() {
@@ -116,11 +117,8 @@ export function WeekPage() {
 
       <div className="mt-3.5 flex flex-wrap gap-2.5 text-xs text-muted">
         {TRADE_VALUES.map((trade) => (
-          <span key={trade} className="inline-flex items-center gap-1.5">
-            <span
-              className="inline-block h-2.5 w-2.5 rounded-[3px]"
-              style={{ background: colorVar(`trade-${trade}`) }}
-            />
+          <span key={trade} className="inline-flex items-center gap-1">
+            <TradeIcon trade={trade} size={13} />
             {TRADES[trade]}
           </span>
         ))}
