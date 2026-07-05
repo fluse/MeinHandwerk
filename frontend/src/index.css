@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-@theme {
+@theme static {
   /* Marke / Basis (aus Vorlage: C) */
   --color-page: #f4f6f1;
   --color-card: #ffffff;

@@ -34,7 +34,7 @@ export function WeekPage() {
             <ListChecks size={14} /> Liste
           </Link>
           <Link
-            to={`/einsatzplan?date=${week}`}
+            to={`/schedule?date=${week}`}
             className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-sage-deep no-underline"
           >
             <CalendarClock size={14} /> Tagesansicht
@@ -83,7 +83,7 @@ export function WeekPage() {
               return (
                 <div key={dIso} className="contents">
                   <Link
-                    to={`/einsatzplan?date=${dIso}`}
+                    to={`/schedule?date=${dIso}`}
                     className="flex flex-col items-center justify-center border-b border-r border-border bg-page p-1 no-underline hover:bg-sage/15"
                   >
                     <span className="text-xs font-extrabold text-sage-deep">{WD[di]}</span>
@@ -104,7 +104,7 @@ export function WeekPage() {
                     return (
                       <Link
                         key={m.id + dIso}
-                        to={`/einsatzplan?date=${dIso}`}
+                        to={`/schedule?date=${dIso}`}
                         className="block border-b border-r border-border bg-card p-1 align-top no-underline"
                       >
                         {dayOrders.map((o) => (

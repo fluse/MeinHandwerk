@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/core/layout/AppLayout'
+import { ErrorPage } from '@/core/components/ErrorPage'
 import { SettingsLayout } from '@/core/layout/SettingsLayout'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { TeamPage } from '@/features/team/pages/TeamPage'
@@ -26,48 +27,54 @@ import { RoleRoute } from './RoleRoute'
 
 export const router = createBrowserRouter([
   {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    element: <ProtectedRoute />,
+    errorElement: <ErrorPage />,
     children: [
       {
-        element: <AppLayout />,
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        element: <ProtectedRoute />,
         children: [
-          { index: true, element: <HomePage /> },
-          { path: 'einsatzplan', element: <DayBoardPage /> },
-          { path: 'week', element: <WeekPage /> },
-          { path: 'week/:userId', element: <EmployeeWeekPage /> },
-          { path: 'auftraege', element: <OrdersListPage /> },
-          { path: 'customers', element: <CustomersPage /> },
-          { path: 'projects', element: <ProjectsPage /> },
-          { path: 'pinboard', element: <PinboardPage /> },
-          { path: 'vehicles', element: <VehiclesPage /> },
-          { path: 'events', element: <EventsPage /> },
-          { path: 'timetracking', element: <TimetrackingPage /> },
-          { path: 'orders/:orderId/rapports', element: <OrderRapportsPage /> },
-          { path: 'orders/:orderId/rapport/new', element: <RapportFormPage /> },
-          { path: 'orders/:orderId/rapport/:rapportId/edit', element: <RapportFormPage /> },
           {
-            element: <RoleRoute allow={['chef', 'buero']} />,
+            element: <AppLayout />,
             children: [
+              { index: true, element: <HomePage /> },
+              { path: 'schedule', element: <DayBoardPage /> },
+              { path: 'week', element: <WeekPage /> },
+              { path: 'week/:userId', element: <EmployeeWeekPage /> },
+              { path: 'auftraege', element: <OrdersListPage /> },
+              { path: 'customers', element: <CustomersPage /> },
+              { path: 'projects', element: <ProjectsPage /> },
+              { path: 'pinboard', element: <PinboardPage /> },
+              { path: 'vehicles', element: <VehiclesPage /> },
+              { path: 'events', element: <EventsPage /> },
+              { path: 'timetracking', element: <TimetrackingPage /> },
+              { path: 'orders/:orderId/rapports', element: <OrderRapportsPage /> },
+              { path: 'orders/:orderId/rapport/new', element: <RapportFormPage /> },
+              { path: 'orders/:orderId/rapport/:rapportId/edit', element: <RapportFormPage /> },
               {
-                path: 'settings',
-                element: <SettingsLayout />,
+                element: <RoleRoute allow={['chef', 'buero']} />,
                 children: [
-                  { index: true, element: <Navigate to="general" replace /> },
-                  { path: 'general', element: <GeneralSettingsPage /> },
-                  { path: 'team', element: <TeamPage /> },
-                  { path: 'vehicles', element: <VehicleSettingsPage /> },
+                  {
+                    path: 'settings',
+                    element: <SettingsLayout />,
+                    children: [
+                      { index: true, element: <Navigate to="general" replace /> },
+                      { path: 'general', element: <GeneralSettingsPage /> },
+                      { path: 'team', element: <TeamPage /> },
+                      { path: 'vehicles', element: <VehicleSettingsPage /> },
+                    ],
+                  },
+                  { path: 'orders/new', element: <OrderFormPage /> },
+                  { path: 'orders/:orderId/edit', element: <OrderFormPage /> },
+                  { path: 'customers/new', element: <CustomerFormPage /> },
+                  { path: 'customers/:customerId/edit', element: <CustomerFormPage /> },
+                  { path: 'projects/new', element: <ProjectFormPage /> },
+                  { path: 'projects/:projectId/edit', element: <ProjectFormPage /> },
                 ],
               },
-              { path: 'orders/new', element: <OrderFormPage /> },
-              { path: 'orders/:orderId/edit', element: <OrderFormPage /> },
-              { path: 'customers/new', element: <CustomerFormPage /> },
-              { path: 'customers/:customerId/edit', element: <CustomerFormPage /> },
-              { path: 'projects/new', element: <ProjectFormPage /> },
-              { path: 'projects/:projectId/edit', element: <ProjectFormPage /> },
+              { path: '*', element: <ErrorPage /> },
             ],
           },
         ],

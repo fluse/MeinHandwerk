@@ -29,10 +29,10 @@ interface Tab {
 const TABS: Tab[] = [
   { to: '/', label: 'Start', icon: Home, match: (p) => p === '/' },
   {
-    to: '/einsatzplan',
+    to: '/schedule',
     label: 'Kalender',
     icon: Calendar,
-    match: (p) => p.startsWith('/einsatzplan') || p.startsWith('/week') || p.startsWith('/orders'),
+    match: (p) => p.startsWith('/schedule') || p.startsWith('/week') || p.startsWith('/orders'),
   },
   { to: '/projects', label: 'Projekte', icon: Folder, match: (p) => p.startsWith('/projects') },
   {

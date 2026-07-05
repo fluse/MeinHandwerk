@@ -113,7 +113,7 @@ export function HomePage() {
       <h1 className="mb-1 text-lg font-bold text-ink">Hallo{user?.name ? `, ${user.name}` : ''}</h1>
       <p className="mb-4 text-sm text-muted capitalize">{fmtLong(today)}</p>
 
-      <Section title="Meine Aufträge" action={{ label: 'Einsatzplan', to: '/einsatzplan' }}>
+      <Section title="Meine Aufträge" action={{ label: 'Einsatzplan', to: '/schedule' }}>
         {ordersLoading ? (
           <p className="text-sm text-muted">Aufträge werden geladen…</p>
         ) : (
