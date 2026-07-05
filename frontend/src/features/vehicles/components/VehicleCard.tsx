@@ -3,6 +3,7 @@ import { LocateFixed, MapPin, Navigation, Pencil, Trash2, User } from 'lucide-re
 import { Button } from '@/core/components/Button'
 import { DetailRow } from '@/core/components/DetailRow'
 import { ConfirmDialog } from '@/core/components/ConfirmDialog'
+import { MapsAppDialog } from '@/core/components/MapsAppDialog'
 import { geocodeAddress } from '@/core/api/geocoding'
 import { useAssignVehicle, useUpdateVehicleLocation } from '../hooks/useVehicleMutations'
 import type { Vehicle } from '../types/vehicle'
@@ -24,6 +25,7 @@ export function VehicleCard({
 }: VehicleCardProps) {
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showMaps, setShowMaps] = useState(false)
   const [address, setAddress] = useState(v.address)
   const [geoError, setGeoError] = useState('')
   const assign = useAssignVehicle()
@@ -118,7 +120,7 @@ export function VehicleCard({
               <Button
                 variant="secondary"
                 className="flex-1"
-                onClick={() => window.open(mapsHref, '_blank')}
+                onClick={() => setShowMaps(true)}
               >
                 <Navigation size={16} className="mr-1.5 inline-block align-text-bottom" />
                 Navigation
@@ -193,6 +195,12 @@ export function VehicleCard({
           setConfirmDelete(false)
           onDelete()
         }}
+      />
+
+      <MapsAppDialog
+        open={showMaps}
+        target={{ address: v.address, lat: v.lat, lng: v.lng }}
+        onClose={() => setShowMaps(false)}
       />
     </div>
   )

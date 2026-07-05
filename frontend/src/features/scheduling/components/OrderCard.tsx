@@ -17,9 +17,11 @@ import {
   X,
 } from 'lucide-react'
 import { surname, shortAddr } from '@/core/lib/format'
+import { fmtShort } from '@/core/lib/date'
 import { Button } from '@/core/components/Button'
 import { ConfirmDialog } from '@/core/components/ConfirmDialog'
 import { DetailRow } from '@/core/components/DetailRow'
+import { MapsAppDialog } from '@/core/components/MapsAppDialog'
 import type { RosterMember } from '@/core/api/roster'
 import { useOrderPhotos, useUploadOrderPhoto, useDeleteOrderPhoto } from '../hooks/useOrderPhotos'
 import { useMarkOrderRead, useOrderReads } from '../hooks/useOrderReads'
@@ -66,6 +68,7 @@ export function OrderCard({
   const reopen = useReopenOrder()
   const fileRef = useRef<HTMLInputElement>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showMaps, setShowMaps] = useState(false)
 
   const isAssignedToMe = order.assigned.includes(currentUserId)
   const mapsHref = order.address
@@ -109,7 +112,7 @@ export function OrderCard({
           </div>
           <div className="truncate text-xs text-muted">
             {shortAddr(order.address) || '—'}
-            {order.from ? ` · ${order.from}` : ''}
+            {order.from ? ` · ${fmtShort(new Date(order.date + 'T00:00:00'))} ${order.from}` : ''}
           </div>
         </div>
         <TradeBadge trade={order.trade} />
@@ -232,7 +235,7 @@ export function OrderCard({
               <Button
                 variant="secondary"
                 className="flex-1"
-                onClick={() => window.open(mapsHref, '_blank')}
+                onClick={() => setShowMaps(true)}
               >
                 <Navigation size={16} className="mr-1.5 inline-block align-text-bottom" />
                 Navigation
@@ -323,6 +326,12 @@ export function OrderCard({
           setConfirmDelete(false)
           onDelete()
         }}
+      />
+
+      <MapsAppDialog
+        open={showMaps}
+        target={{ address: order.address }}
+        onClose={() => setShowMaps(false)}
       />
     </div>
   )
