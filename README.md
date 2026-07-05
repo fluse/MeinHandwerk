@@ -1,4 +1,4 @@
-# Handwerkerkalender
+# MeinHandwerk
 
 React frontend + PocketBase backend, orchestrated with Docker Compose.
 
