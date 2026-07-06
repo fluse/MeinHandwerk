@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { CalendarRange, ListChecks, Lock, Plus } from 'lucide-react'
 import { useAuth } from '@/core/auth/AuthProvider'
+import { Overlay } from '@/core/components/Overlay'
 import { RoleIcon } from '@/core/components/RoleIcon'
 import { colorVar } from '@/core/lib/cssVar'
 import { iso, mondayOf, todayISO } from '@/core/lib/date'
@@ -252,38 +253,36 @@ export function DayBoardPage() {
       </div>
 
       {selectedOrder && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
-          onClick={() => setSelectedOrder(null)}
+        <Overlay
+          variant="sheet"
+          responsive
+          bare
+          panelClassName="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-card sm:rounded-2xl"
+          onBackdropClick={() => setSelectedOrder(null)}
         >
-          <div
-            className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-card sm:rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <OrderCard
-              order={selectedOrder}
-              roster={roster}
-              currentUserId={user?.id ?? ''}
-              canPlan={canPlan}
-              isOpen
-              onToggle={() => setSelectedOrder(null)}
-              onEdit={() => navigate(`/orders/${selectedOrder.id}/edit`)}
-              onDelete={() => {
-                deleteOrder.mutate(selectedOrder.id)
-                setSelectedOrder(null)
-              }}
-              onNotify={() => {
-                setNotifyOrder(selectedOrder)
-                setSelectedOrder(null)
-              }}
-              onComplete={() => {
-                setCompleteOrder(selectedOrder)
-                setSelectedOrder(null)
-              }}
-              onRapport={() => navigate(`/orders/${selectedOrder.id}/rapports`)}
-            />
-          </div>
-        </div>
+          <OrderCard
+            order={selectedOrder}
+            roster={roster}
+            currentUserId={user?.id ?? ''}
+            canPlan={canPlan}
+            isOpen
+            onToggle={() => setSelectedOrder(null)}
+            onEdit={() => navigate(`/orders/${selectedOrder.id}/edit`)}
+            onDelete={() => {
+              deleteOrder.mutate(selectedOrder.id)
+              setSelectedOrder(null)
+            }}
+            onNotify={() => {
+              setNotifyOrder(selectedOrder)
+              setSelectedOrder(null)
+            }}
+            onComplete={() => {
+              setCompleteOrder(selectedOrder)
+              setSelectedOrder(null)
+            }}
+            onRapport={() => navigate(`/orders/${selectedOrder.id}/rapports`)}
+          />
+        </Overlay>
       )}
 
       {notifyOrder && (

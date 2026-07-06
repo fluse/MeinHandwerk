@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
 import { Button } from '@/core/components/Button'
+import { Overlay } from '@/core/components/Overlay'
 import { siteFormSchema, type SiteFormInput } from '../types/site'
 import { useCreateSite } from '../hooks/useSiteMutations'
 
@@ -44,44 +45,35 @@ export function AddSiteForm({ customerId }: { customerId: string }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex w-full max-w-sm flex-col gap-2 rounded-lg bg-card p-5 shadow-xl"
-      >
-        <div className="mb-1 text-sm font-extrabold text-sage-deep">Baustelle hinzufügen</div>
+    <Overlay onSubmit={handleSubmit(onSubmit)} panelClassName="flex flex-col gap-2">
+      <div className="mb-1 text-sm font-extrabold text-sage-deep">Baustelle hinzufügen</div>
 
-        <input
-          placeholder="Bezeichnung (optional)"
-          className={fieldClass}
-          {...register('label')}
-        />
+      <input placeholder="Bezeichnung (optional)" className={fieldClass} {...register('label')} />
 
-        <input placeholder="Straße + Nr." className={fieldClass} {...register('street')} />
+      <input placeholder="Straße + Nr." className={fieldClass} {...register('street')} />
 
-        <div className="flex gap-2">
-          <input placeholder="PLZ" className={`w-[38%] ${fieldClass}`} {...register('zip')} />
-          <input placeholder="Ort" className={`flex-1 ${fieldClass}`} {...register('city')} />
-        </div>
+      <div className="flex gap-2">
+        <input placeholder="PLZ" className={`w-[38%] ${fieldClass}`} {...register('zip')} />
+        <input placeholder="Ort" className={`flex-1 ${fieldClass}`} {...register('city')} />
+      </div>
 
-        <textarea
-          placeholder="Notizen (optional)"
-          className={`min-h-[50px] resize-y ${fieldClass}`}
-          {...register('notes')}
-        />
+      <textarea
+        placeholder="Notizen (optional)"
+        className={`min-h-[50px] resize-y ${fieldClass}`}
+        {...register('notes')}
+      />
 
-        {errors.label && <p className="text-xs text-danger">{errors.label.message}</p>}
-        {error && <p className="text-xs text-danger">Baustelle konnte nicht angelegt werden.</p>}
+      {errors.label && <p className="text-xs text-danger">{errors.label.message}</p>}
+      {error && <p className="text-xs text-danger">Baustelle konnte nicht angelegt werden.</p>}
 
-        <div className="mt-1 flex justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
-            Abbrechen
-          </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'Wird angelegt…' : 'Hinzufügen'}
-          </Button>
-        </div>
-      </form>
-    </div>
+      <div className="mt-1 flex justify-end gap-2">
+        <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+          Abbrechen
+        </Button>
+        <Button type="submit" disabled={isPending}>
+          {isPending ? 'Wird angelegt…' : 'Hinzufügen'}
+        </Button>
+      </div>
+    </Overlay>
   )
 }

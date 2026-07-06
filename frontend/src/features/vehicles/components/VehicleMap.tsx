@@ -65,7 +65,7 @@ export function VehicleMap({ vehicles, customers }: VehicleMapProps) {
   ]
 
   return (
-    <div className="mb-3 h-64 w-full overflow-hidden rounded-xl border border-border">
+    <div className="relative isolate z-0 mb-3 h-64 w-full overflow-hidden rounded-xl border border-border">
       <MapContainer center={DEFAULT_CENTER} zoom={6} className="h-full w-full">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

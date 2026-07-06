@@ -126,41 +126,7 @@ export function HomePage() {
         )}
       </Section>
 
-      <Section title="Events heute" action={{ label: 'Alle Events', to: '/events' }}>
-        {todaysEvents.length === 0 ? (
-          <p className="text-sm text-muted">Keine Events heute.</p>
-        ) : (
-          todaysEvents.map((e) => (
-            <EventCard
-              key={e.id}
-              event={e}
-              roster={roster}
-              currentUserId={userId}
-              canPlan={canPlan}
-              onDelete={() => deleteEvent.mutate(e.id)}
-            />
-          ))
-        )}
-      </Section>
-
-      <Section title="Pinnwand" action={{ label: 'Zur Pinnwand', to: '/pinboard' }}>
-        {relevantPosts.length === 0 ? (
-          <p className="text-sm text-muted">Nichts Neues auf der Pinnwand.</p>
-        ) : (
-          relevantPosts.map((p) => (
-            <PostCard
-              key={p.id}
-              post={p}
-              roster={roster}
-              currentUserId={userId}
-              canPlan={canPlan}
-              onDelete={() => deletePost.mutate(p.id)}
-            />
-          ))
-        )}
-      </Section>
-
-      <Section title="Fahrzeug" action={{ label: 'Alle Fahrzeuge', to: '/vehicles' }}>
+      <Section title="Fahrzeuge" action={{ label: 'Alle Fahrzeuge', to: '/vehicles' }}>
         {myVehicle ? (
           <div className="mb-2.5 flex items-center justify-between gap-2 rounded-xl border border-border bg-card p-3.5">
             <div className="flex items-center gap-2.5">
@@ -202,6 +168,40 @@ export function HomePage() {
           </>
         ) : (
           <p className="text-sm text-muted">Kein Fahrzeug zugeordnet, aktuell auch keine frei.</p>
+        )}
+      </Section>
+
+      <Section title="Events heute" action={{ label: 'Alle Events', to: '/events' }}>
+        {todaysEvents.length === 0 ? (
+          <p className="text-sm text-muted">Keine Events heute.</p>
+        ) : (
+          todaysEvents.map((e) => (
+            <EventCard
+              key={e.id}
+              event={e}
+              roster={roster}
+              currentUserId={userId}
+              canPlan={canPlan}
+              onDelete={() => deleteEvent.mutate(e.id)}
+            />
+          ))
+        )}
+      </Section>
+
+      <Section title="Pinnwand" action={{ label: 'Zur Pinnwand', to: '/pinboard' }}>
+        {relevantPosts.length === 0 ? (
+          <p className="text-sm text-muted">Nichts Neues auf der Pinnwand.</p>
+        ) : (
+          relevantPosts.map((p) => (
+            <PostCard
+              key={p.id}
+              post={p}
+              roster={roster}
+              currentUserId={userId}
+              canPlan={canPlan}
+              onDelete={() => deletePost.mutate(p.id)}
+            />
+          ))
         )}
       </Section>
 

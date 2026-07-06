@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { Overlay } from '@/core/components/Overlay'
 import {
   Calendar,
   Car,
@@ -92,40 +93,36 @@ export function BottomNav() {
         </div>
       </nav>
 
-      {moreOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
-          onClick={() => setMoreOpen(false)}
-        >
-          <div
-            className="w-full max-w-lg rounded-t-2xl bg-card p-5"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.25rem)' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mx-auto mb-3.5 h-1 w-10 rounded-full bg-border" />
-            <div className="grid grid-cols-3 gap-2.5">
-              {moreTabs.map((tab) => {
-                const active = tab.match(pathname)
-                const Icon = tab.icon
-                return (
-                  <Link
-                    key={tab.to}
-                    to={tab.to}
-                    onClick={() => setMoreOpen(false)}
-                    aria-current={active ? 'page' : undefined}
-                    className={`flex flex-col items-center gap-1 rounded-xl px-3 py-3 text-xs font-semibold no-underline transition-colors ${
-                      active ? 'bg-page text-sage-deep' : 'text-muted'
-                    }`}
-                  >
-                    <Icon size={22} strokeWidth={active ? 2.2 : 1.8} />
-                    {tab.label}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
+      <Overlay
+        open={moreOpen}
+        variant="sheet"
+        bare
+        panelClassName="w-full max-w-lg rounded-t-2xl bg-card p-5"
+        panelStyle={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.25rem)' }}
+        onBackdropClick={() => setMoreOpen(false)}
+      >
+        <div className="mx-auto mb-3.5 h-1 w-10 rounded-full bg-border" />
+        <div className="grid grid-cols-3 gap-2.5">
+          {moreTabs.map((tab) => {
+            const active = tab.match(pathname)
+            const Icon = tab.icon
+            return (
+              <Link
+                key={tab.to}
+                to={tab.to}
+                onClick={() => setMoreOpen(false)}
+                aria-current={active ? 'page' : undefined}
+                className={`flex flex-col items-center gap-1 rounded-xl px-3 py-3 text-xs font-semibold no-underline transition-colors ${
+                  active ? 'bg-page text-sage-deep' : 'text-muted'
+                }`}
+              >
+                <Icon size={22} strokeWidth={active ? 2.2 : 1.8} />
+                {tab.label}
+              </Link>
+            )
+          })}
         </div>
-      )}
+      </Overlay>
     </>
   )
 }

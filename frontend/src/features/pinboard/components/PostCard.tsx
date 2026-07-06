@@ -119,7 +119,7 @@ export function PostCard({ post: p, roster, currentUserId, canPlan, onDelete }: 
             onClick={() => toggleResolved.mutate(p)}
             className="text-sm font-semibold text-sage-deep"
           >
-            {p.resolved ? 'Wieder offen' : 'Als geklärt'}
+            {p.resolved ? 'Wieder offen' : 'Als geklärt markieren'}
           </button>
         )}
         <div className="flex-1" />
