@@ -1,4 +1,5 @@
 import type { CSSProperties, FormEvent, MouseEvent, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { useBodyScrollLock } from '@/core/hooks/useBodyScrollLock'
 
 interface OverlayProps {
@@ -58,13 +59,21 @@ export function Overlay({
     ? (e: MouseEvent<HTMLElement>) => e.stopPropagation()
     : undefined
 
-  return (
+  // Per Portal direkt an <body> gerendert: sonst würde ein Overlay, das innerhalb des sticky
+  // Headers ausgelöst wird (z. B. die Meldungen-Glocke), im lokalen Stacking-Context des Headers
+  // gefangen bleiben und trotz z-50 hinter der ebenfalls sticky positionierten BottomNav liegen.
+  return createPortal(
     <div
       className={`fixed inset-0 z-50 flex justify-center bg-black/40 ${alignClass}`}
       onClick={onBackdropClick}
     >
       {onSubmit ? (
-        <form onSubmit={onSubmit} className={panelClass} style={panelStyle} onClick={stopPropagation}>
+        <form
+          onSubmit={onSubmit}
+          className={panelClass}
+          style={panelStyle}
+          onClick={stopPropagation}
+        >
           {handle}
           {children}
         </form>
@@ -74,6 +83,7 @@ export function Overlay({
           {children}
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   )
 }

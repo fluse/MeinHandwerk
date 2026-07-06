@@ -2,6 +2,7 @@ import { LogOut, Settings } from 'lucide-react'
 import { Link, Outlet, useMatches, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/core/auth/AuthProvider'
 import { useCompanySettings } from '@/features/settings/hooks/useCompanySettings'
+import { NotificationBell } from '@/features/notifications/components/NotificationBell'
 import { BottomNav } from './BottomNav'
 
 type RouteHandle = { fullBleed?: boolean }
@@ -36,6 +37,7 @@ export function AppLayout() {
         </Link>
         {user && (
           <div className="flex flex-none items-center gap-3">
+            <NotificationBell />
             {canPlan && (
               <Link
                 to="/settings"

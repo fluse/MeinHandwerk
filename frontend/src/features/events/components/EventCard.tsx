@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { CheckCircle2, Trash2 } from 'lucide-react'
 import { ConfirmDialog } from '@/core/components/ConfirmDialog'
-import { colorVar } from '@/core/lib/cssVar'
 import { fmtLong } from '@/core/lib/date'
 import type { RosterMember } from '@/core/api/roster'
 import { useToggleRsvp } from '../hooks/useEventMutations'
@@ -34,7 +33,7 @@ export function EventCard({
   return (
     <div
       className="mb-2.5 rounded-2xl border border-border bg-card p-3.5"
-      style={{ borderLeft: `5px solid ${colorVar(`etype-${e.type}`)}`, opacity: past ? 0.7 : 1 }}
+      style={{ opacity: past ? 0.7 : 1 }}
     >
       <div className="flex items-start gap-2.5">
         <t.icon size={26} className="text-sage-deep" />

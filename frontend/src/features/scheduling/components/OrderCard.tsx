@@ -25,6 +25,7 @@ import { MapsAppDialog } from '@/core/components/MapsAppDialog'
 import type { RosterMember } from '@/core/api/roster'
 import { useOrderPhotos, useUploadOrderPhoto, useDeleteOrderPhoto } from '../hooks/useOrderPhotos'
 import { useMarkOrderRead, useOrderReads } from '../hooks/useOrderReads'
+import { useCreateOrderCheckin, useOrderCheckins } from '@/core/hooks/useOrderCheckins'
 import { useReopenOrder } from '../hooks/useOrderMutations'
 import type { Order } from '../types/order'
 import { TradeBadge } from './TradeBadge'
@@ -65,15 +66,33 @@ export function OrderCard({
   const deletePhoto = useDeleteOrderPhoto(order.id)
   const { data: reads = {} } = useOrderReads(order.id, isOpen)
   const markRead = useMarkOrderRead(order.id)
+  const { data: checkins = [] } = useOrderCheckins(order.id, isOpen)
+  const createCheckin = useCreateOrderCheckin(order.id)
   const reopen = useReopenOrder()
   const fileRef = useRef<HTMLInputElement>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [showMaps, setShowMaps] = useState(false)
+  const [dismissedArrivalPrompt, setDismissedArrivalPrompt] = useState(false)
 
   const isAssignedToMe = order.assigned.includes(currentUserId)
   const mapsHref = order.address
     ? `https://maps.google.com/?q=${encodeURIComponent(order.address)}`
     : undefined
+
+  const myEnroute = checkins.find((c) => c.employee === currentUserId && c.type === 'unterwegs')
+  const myArrived = checkins.find((c) => c.employee === currentUserId && c.type === 'angekommen')
+
+  // Fallback für vergessene Ankunftsmeldung: wegklickbar, taucht aber bei jedem erneuten Öffnen
+  // der Auftragskarte wieder auf, solange keine Ankunft bestätigt wurde (siehe feature-meldungen.md).
+  // Zustandsanpassung während des Renderns statt in einem Effect (React-Muster für "State beim
+  // Ändern einer externen Bedingung zurücksetzen", vermeidet kaskadierende Effect-Renders).
+  const arrivalPending = isOpen && isAssignedToMe && Boolean(myEnroute) && !myArrived
+  const [prevArrivalPending, setPrevArrivalPending] = useState(arrivalPending)
+  if (arrivalPending !== prevArrivalPending) {
+    setPrevArrivalPending(arrivalPending)
+    if (arrivalPending) setDismissedArrivalPrompt(false)
+  }
+  const showArrivalPrompt = arrivalPending && !dismissedArrivalPrompt
 
   useEffect(() => {
     if (isOpen && isAssignedToMe && !reads[currentUserId]) {
@@ -82,22 +101,26 @@ export function OrderCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
+  const handleEnroute = () => {
+    createCheckin.mutate({ employeeId: currentUserId, type: 'unterwegs' })
+    setShowMaps(true)
+  }
+
+  const handleArrived = () => {
+    createCheckin.mutate({ employeeId: currentUserId, type: 'angekommen' })
+    setDismissedArrivalPrompt(true)
+  }
+
   const onFiles = (files: FileList | null) => {
     if (!files?.length) return
     Array.from(files).forEach((file) => uploadPhoto.mutate({ file, uploadedBy: currentUserId }))
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  const borderColor =
-    order.trade === 'innenausbau'
-      ? 'var(--color-trade-innenausbau-border)'
-      : `var(--color-trade-${order.trade})`
-
   return (
     <div
       className="mb-2.5 overflow-hidden rounded-xl border border-border bg-card"
       style={{
-        borderLeft: `5px solid ${borderColor}`,
         opacity: order.status === 'erledigt' && !isOpen ? 0.7 : 1,
       }}
     >
@@ -231,12 +254,24 @@ export function OrderCard({
             )}
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
-            {mapsHref && (
+            {mapsHref && isAssignedToMe && !myEnroute && (
+              <Button variant="secondary" className="flex-1" onClick={handleEnroute}>
+                <Navigation size={16} className="mr-1.5 inline-block align-text-bottom" />
+                Mache mich jetzt auf den Weg zum Kunden
+              </Button>
+            )}
+            {isAssignedToMe && myEnroute && !myArrived && (
               <Button
                 variant="secondary"
                 className="flex-1"
-                onClick={() => setShowMaps(true)}
+                onClick={() => setDismissedArrivalPrompt(false)}
               >
+                <MapPin size={16} className="mr-1.5 inline-block align-text-bottom" />
+                Bin jetzt beim Kunden angekommen
+              </Button>
+            )}
+            {mapsHref && !isAssignedToMe && (
+              <Button variant="secondary" className="flex-1" onClick={() => setShowMaps(true)}>
                 <Navigation size={16} className="mr-1.5 inline-block align-text-bottom" />
                 Navigation
               </Button>
@@ -332,6 +367,15 @@ export function OrderCard({
         open={showMaps}
         target={{ address: order.address }}
         onClose={() => setShowMaps(false)}
+      />
+
+      <ConfirmDialog
+        open={showArrivalPrompt}
+        title="Angekommen?"
+        description="Bist du bereits beim Kunden angekommen?"
+        confirmLabel="Ja, angekommen"
+        onCancel={() => setDismissedArrivalPrompt(true)}
+        onConfirm={handleArrived}
       />
     </div>
   )

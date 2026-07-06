@@ -5,6 +5,7 @@ import { SettingsLayout } from '@/core/layout/SettingsLayout'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { TeamPage } from '@/features/team/pages/TeamPage'
 import { GeneralSettingsPage } from '@/features/settings/pages/GeneralSettingsPage'
+import { NotificationSettingsPage } from '@/features/settings/pages/NotificationSettingsPage'
 import { HomePage } from '@/features/home/pages/HomePage'
 import { DayBoardPage } from '@/features/scheduling/pages/DayBoardPage'
 import { WeekPage } from '@/features/scheduling/pages/WeekPage'
@@ -20,6 +21,7 @@ import { VehiclesPage } from '@/features/vehicles/pages/VehiclesPage'
 import { VehicleSettingsPage } from '@/features/vehicles/pages/VehicleSettingsPage'
 import { EventsPage } from '@/features/events/pages/EventsPage'
 import { TimetrackingPage } from '@/features/timetracking/pages/TimetrackingPage'
+import { NotificationsHistoryPage } from '@/features/notifications/pages/NotificationsHistoryPage'
 import { OrderRapportsPage } from '@/features/timetracking/pages/OrderRapportsPage'
 import { RapportFormPage } from '@/features/timetracking/pages/RapportFormPage'
 import { ProtectedRoute } from './ProtectedRoute'
@@ -50,6 +52,7 @@ export const router = createBrowserRouter([
               { path: 'vehicles', element: <VehiclesPage /> },
               { path: 'events', element: <EventsPage /> },
               { path: 'timetracking', element: <TimetrackingPage /> },
+              { path: 'notifications', element: <NotificationsHistoryPage /> },
               { path: 'orders/:orderId/rapports', element: <OrderRapportsPage /> },
               { path: 'orders/:orderId/rapport/new', element: <RapportFormPage /> },
               { path: 'orders/:orderId/rapport/:rapportId/edit', element: <RapportFormPage /> },
@@ -64,6 +67,7 @@ export const router = createBrowserRouter([
                       { path: 'general', element: <GeneralSettingsPage /> },
                       { path: 'team', element: <TeamPage /> },
                       { path: 'vehicles', element: <VehicleSettingsPage /> },
+                      { path: 'notifications', element: <NotificationSettingsPage /> },
                     ],
                   },
                   { path: 'orders/new', element: <OrderFormPage /> },

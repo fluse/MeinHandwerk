@@ -6,6 +6,7 @@ import { ROLES } from '@/core/lib/roles'
 import { hoursBetween } from '@/core/lib/time'
 import { todayISO } from '@/core/lib/date'
 import type { RosterMember } from '@/core/api/roster'
+import { useOrderCheckins } from '@/core/hooks/useOrderCheckins'
 import {
   useCreateTimeEntry,
   useDeleteTimeEntry,
@@ -51,6 +52,33 @@ export function TimeEntryDialog({
   const [error, setError] = useState('')
 
   const employeeName = roster.find((m) => m.id === employee)?.name ?? ''
+
+  // Vorausfüllen aus den Mikro-Status-Taps am Auftrag ("Mache mich jetzt auf den Weg" /
+  // "Bin jetzt beim Kunden angekommen"), damit Fahrzeit nicht nochmal von Hand eingetippt
+  // werden muss. Nur für neue Einträge, und nur Felder, die noch leer sind – überschreibt keine
+  // bereits (manuell) gesetzten Werte. Zustandsanpassung während des Renderns statt in einem
+  // Effect (siehe gleiches Muster in OrderCard.tsx), über einen Schlüssel einmalig pro
+  // Auftrag/Mitarbeiter-Kombination ausgelöst statt bei jedem Render erneut.
+  const { data: checkins = [] } = useOrderCheckins(order, !entry && Boolean(order))
+  const prefillKey = `${order}:${employee}:${checkins.length}`
+  const [lastPrefillKey, setLastPrefillKey] = useState('')
+  if (!entry && order && prefillKey !== lastPrefillKey) {
+    setLastPrefillKey(prefillKey)
+    const mine = checkins.filter((c) => c.employee === employee)
+    const enroute = mine.find((c) => c.type === 'unterwegs')
+    const arrived = mine.find((c) => c.type === 'angekommen')
+    if (enroute || arrived) {
+      const fmt = (isoDateTime: string) =>
+        new Date(isoDateTime).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+      const nextTravelVon = enroute ? fmt(enroute.created) : travelVon
+      const nextTravelBis = arrived ? fmt(arrived.created) : travelBis
+      if (!travelVon && enroute) setTravelVon(nextTravelVon)
+      if (!travelBis && arrived) setTravelBis(nextTravelBis)
+      if (!travel && nextTravelVon && nextTravelBis) {
+        setTravel(String(hoursBetween(nextTravelVon, nextTravelBis)))
+      }
+    }
+  }
 
   const onVonChange = (v: string) => {
     setVon(v)
