@@ -19,6 +19,10 @@ export function NotificationBell() {
     if (notification.link) navigate(notification.link)
   }
 
+  const handleMarkRead = (notification: AppNotification) => {
+    markRead.mutate(notification.id)
+  }
+
   return (
     <>
       <button
@@ -42,7 +46,14 @@ export function NotificationBell() {
           {unread.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted">Keine neuen Meldungen.</p>
           ) : (
-            unread.map((n) => <NotificationItem key={n.id} notification={n} onOpen={handleOpen} />)
+            unread.map((n) => (
+              <NotificationItem
+                key={n.id}
+                notification={n}
+                onOpen={handleOpen}
+                onMarkRead={handleMarkRead}
+              />
+            ))
           )}
         </div>
         <hr className="my-4 border-border" />

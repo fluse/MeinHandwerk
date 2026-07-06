@@ -3,7 +3,6 @@ import L from 'leaflet'
 import type { LatLngExpression } from 'leaflet'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import type { CustomerLocation } from '@/core/api/customerLocations'
 import type { Vehicle } from '../types/vehicle'
 
 // Fallback-Zentrum ohne Marker: geografische Mitte Deutschlands.
@@ -24,7 +23,6 @@ function markerIcon(bg: string, emoji: string) {
 
 const vehicleIconAssigned = markerIcon('#7c7bb0', '🚐')
 const vehicleIconFree = markerIcon('#9aa0a6', '🚐')
-const customerIcon = markerIcon('#51684d', '📍')
 
 function mapsLink(lat: number, lng: number) {
   return `https://maps.google.com/?q=${lat},${lng}`
@@ -48,21 +46,14 @@ function FitBounds({ points }: { points: LatLngExpression[] }) {
 
 interface VehicleMapProps {
   vehicles: Vehicle[]
-  customers: CustomerLocation[]
 }
 
-export function VehicleMap({ vehicles, customers }: VehicleMapProps) {
+export function VehicleMap({ vehicles }: VehicleMapProps) {
   const vehiclePoints = vehicles.filter(
     (v): v is Vehicle & { lat: number; lng: number } => v.lat != null && v.lng != null,
   )
-  const customerPoints = customers.filter(
-    (c): c is CustomerLocation & { lat: number; lng: number } => c.lat != null && c.lng != null,
-  )
 
-  const points: LatLngExpression[] = [
-    ...vehiclePoints.map((v): LatLngExpression => [v.lat, v.lng]),
-    ...customerPoints.map((c): LatLngExpression => [c.lat, c.lng]),
-  ]
+  const points: LatLngExpression[] = vehiclePoints.map((v): LatLngExpression => [v.lat, v.lng])
 
   return (
     <div className="relative isolate z-0 mb-3 h-64 w-full overflow-hidden rounded-xl border border-border">
@@ -85,22 +76,6 @@ export function VehicleMap({ vehicles, customers }: VehicleMapProps) {
               </div>
               <a
                 href={mapsLink(v.lat, v.lng)}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-semibold text-sage-deep"
-              >
-                In Google Maps öffnen
-              </a>
-            </Popup>
-          </Marker>
-        ))}
-        {customerPoints.map((c) => (
-          <Marker key={c.id} position={[c.lat, c.lng]} icon={customerIcon}>
-            <Popup>
-              <div className="text-sm font-semibold text-ink">{c.name}</div>
-              {c.address && <div className="text-xs text-muted">{c.address}</div>}
-              <a
-                href={mapsLink(c.lat, c.lng)}
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs font-semibold text-sage-deep"

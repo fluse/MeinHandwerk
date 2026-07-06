@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useAuth } from '@/core/auth/AuthProvider'
-import { useCustomerLocations } from '@/core/hooks/useCustomerLocations'
 import { useVehicles } from '../hooks/useVehicles'
 import { useDeleteVehicle } from '../hooks/useVehicleMutations'
 import { VehicleMap } from '../components/VehicleMap'
@@ -12,7 +11,6 @@ import type { Vehicle } from '../types/vehicle'
 export function VehiclesPage() {
   const { user, canPlan } = useAuth()
   const { data: vehicles, isLoading, isError } = useVehicles()
-  const { data: customers = [] } = useCustomerLocations()
   const deleteVehicle = useDeleteVehicle()
   const [editing, setEditing] = useState<Vehicle | null>(null)
 
@@ -28,7 +26,7 @@ export function VehiclesPage() {
     <div className="mx-auto max-w-lg pb-16">
       <h1 className="mb-3 text-lg font-bold text-ink">Fahrzeuge</h1>
 
-      <VehicleMap vehicles={vehicles} customers={customers} />
+      {canPlan && <VehicleMap vehicles={vehicles} />}
 
       {vehicles.length === 0 ? (
         <div className="py-6 text-center text-sm text-muted">

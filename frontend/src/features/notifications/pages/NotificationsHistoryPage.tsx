@@ -33,6 +33,10 @@ export function NotificationsHistoryPage() {
     if (notification.link) navigate(notification.link)
   }
 
+  const handleMarkRead = (notification: AppNotification) => {
+    if (!notification.read) markRead.mutate(notification.id)
+  }
+
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-4 text-lg font-semibold text-ink">Alle Meldungen</h1>
@@ -88,7 +92,12 @@ export function NotificationsHistoryPage() {
           <p className="py-6 text-center text-sm text-muted">Keine Meldungen gefunden.</p>
         )}
         {notifications.map((n) => (
-          <NotificationItem key={n.id} notification={n} onOpen={handleOpen} />
+          <NotificationItem
+            key={n.id}
+            notification={n}
+            onOpen={handleOpen}
+            onMarkRead={handleMarkRead}
+          />
         ))}
       </div>
     </div>

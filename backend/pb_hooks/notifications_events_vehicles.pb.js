@@ -110,8 +110,16 @@ onRecordUpdate((e) => {
       }
     })
   } else if (oldAssigned && !newAssigned) {
+    let returnerName = 'Jemand'
+    try {
+      returnerName = e.app.findRecordById('users', oldAssigned).get('name')
+    } catch (err) {
+      // Nutzer nicht auffindbar - Standardtext beibehalten.
+    }
     e.app.findAllRecords('users').forEach((u) => {
-      notify(u.id, 'vehicle_returned', `Das Fahrzeug "${name}" wurde zurückgegeben.`, link)
+      if (u.id !== oldAssigned) {
+        notify(u.id, 'vehicle_returned', `${returnerName} hat das Fahrzeug "${name}" zurückgegeben.`, link)
+      }
     })
   }
 
