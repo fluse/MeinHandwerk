@@ -1,13 +1,17 @@
 import { LogOut, Settings } from 'lucide-react'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useMatches, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/core/auth/AuthProvider'
 import { useCompanySettings } from '@/features/settings/hooks/useCompanySettings'
 import { BottomNav } from './BottomNav'
+
+type RouteHandle = { fullBleed?: boolean }
 
 export function AppLayout() {
   const { user, canPlan, logout } = useAuth()
   const { data: companySettings } = useCompanySettings()
   const navigate = useNavigate()
+  const matches = useMatches()
+  const fullBleed = matches.some((match) => (match.handle as RouteHandle | undefined)?.fullBleed)
 
   const handleLogout = () => {
     logout()
@@ -57,7 +61,7 @@ export function AppLayout() {
           </div>
         )}
       </header>
-      <main className="flex-1 p-4 sm:p-6">
+      <main className={fullBleed ? 'flex-1' : 'flex-1 p-4 sm:p-6'}>
         <Outlet />
       </main>
       <BottomNav />

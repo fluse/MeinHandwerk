@@ -78,34 +78,37 @@ export function DayBoardPage() {
 
   return (
     <div className="pb-16">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <h1 className="text-lg font-bold text-ink">Tagesübersicht</h1>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/auftraege"
-            className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-sage-deep no-underline"
-          >
-            <ListChecks size={14} /> Liste
-          </Link>
-          <Link
-            to={`/week?week=${week}`}
-            className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-sage-deep no-underline"
-          >
-            <CalendarRange size={14} /> Wochenübersicht
-          </Link>
+      <div className="px-4 pt-4 sm:px-6 sm:pt-6">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h1 className="text-lg font-bold text-ink">Tagesübersicht</h1>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/auftraege"
+              className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-sage-deep no-underline"
+            >
+              <ListChecks size={14} /> Liste
+            </Link>
+            <Link
+              to={`/week?week=${week}`}
+              className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-sage-deep no-underline"
+            >
+              <CalendarRange size={14} /> Wochenübersicht
+            </Link>
+          </div>
         </div>
       </div>
-
-      <DayNav date={date} onChange={setDate} />
+      <div>
+        <DayNav date={date} onChange={setDate} />
+      </div>
 
       {isLoading ? (
-        <p className="mt-4 text-sm text-muted">Aufträge werden geladen…</p>
+        <p className="mt-4 px-4 text-sm text-muted sm:px-6">Aufträge werden geladen…</p>
       ) : roster.length === 0 ? (
-        <p className="mt-4 text-sm text-muted">Noch keine Mitarbeiter im Team.</p>
+        <p className="mt-4 px-4 text-sm text-muted sm:px-6">Noch keine Mitarbeiter im Team.</p>
       ) : (
-        <div className="mt-3 overflow-x-auto overflow-y-hidden border border-border">
-          <div className="flex">
-            <div className="w-11 flex-none border-b border-border bg-page" />
+        <div className="mt-3 overflow-x-auto overflow-y-hidden border-y border-border">
+          <div className="flex w-fit">
+            <div className="sticky left-0 z-20 w-11 flex-none border-b border-border bg-page" />
             {columns.map(({ member: m, hidden }) =>
               hidden ? (
                 <div
@@ -143,8 +146,8 @@ export function DayBoardPage() {
           </div>
 
           {anyNoTime && (
-            <div className="flex border-b border-border">
-              <div className="flex w-11 flex-none items-start justify-end pt-1 pr-1 text-right text-[9px] leading-tight font-semibold text-muted">
+            <div className="flex w-fit border-b border-border">
+              <div className="sticky left-0 z-20 flex w-11 flex-none items-start justify-end bg-page pt-1 pr-1 text-right text-[9px] leading-tight font-semibold text-muted">
                 ohne Zeit
               </div>
               {columns.map(({ member: m, hidden, noTime }) => (
@@ -169,8 +172,8 @@ export function DayBoardPage() {
             </div>
           )}
 
-          <div className="relative flex" ref={timelineRowRef}>
-            <div className="relative w-11 flex-none" style={{ height: COLUMN_HEIGHT }}>
+          <div className="relative flex w-fit" ref={timelineRowRef}>
+            <div className="sticky left-0 z-20 w-11 flex-none bg-page" style={{ height: COLUMN_HEIGHT }}>
               <div className="relative" style={{ top: TIMELINE_PAD, height: TOTAL_HEIGHT }}>
                 {hours.map((h) => (
                   <span
@@ -243,7 +246,7 @@ export function DayBoardPage() {
         </div>
       )}
 
-      <div className="mt-3.5 flex flex-wrap gap-2.5 text-xs text-muted">
+      <div className="mt-3.5 flex flex-wrap gap-2.5 px-4 text-xs text-muted sm:px-6">
         {TRADE_VALUES.map((trade) => (
           <span key={trade} className="inline-flex items-center gap-1">
             <TradeIcon trade={trade} size={13} />
