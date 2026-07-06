@@ -17,7 +17,7 @@ import {
 } from '../types/rapport'
 
 const fieldClass =
-  'w-full rounded-md border border-border px-3 py-2 text-sm focus:border-sage focus:outline-none'
+  'rounded-md border border-border px-3 py-2 text-sm focus:border-sage focus:outline-none'
 const UNITS = ['Stk', 'm', 'lfm', 'm²', 'kg', 'l', 'h', 'Pausch.']
 
 function newLine(): MaterialLine {
@@ -136,7 +136,7 @@ export function RapportForm({
         <label className="text-xs font-medium text-muted" htmlFor="date">
           Datum
         </label>
-        <input id="date" type="date" className={fieldClass} {...register('date')} />
+        <input id="date" type="date" className={`${fieldClass} w-full`} {...register('date')} />
         {errors.date && <p className="text-xs text-danger">{errors.date.message}</p>}
       </div>
 
@@ -146,7 +146,7 @@ export function RapportForm({
         </label>
         <textarea
           id="text"
-          className={`${fieldClass} min-h-[100px] resize-y`}
+          className={`${fieldClass} w-full min-h-[100px] resize-y`}
           placeholder="Was wurde gemacht?"
           {...register('text')}
         />
@@ -219,7 +219,7 @@ export function RapportForm({
         </label>
         <input
           id="signedName"
-          className={fieldClass}
+          className={`${fieldClass} w-full`}
           placeholder="z. B. Herr Weber"
           {...register('signedName')}
         />
