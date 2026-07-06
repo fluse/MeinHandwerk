@@ -84,3 +84,13 @@ body {
   background-color: var(--color-page);
   color: var(--color-ink);
 }
+
+/* Safari auf iOS zoomt beim Fokussieren in Eingabefelder mit weniger als 16px Schriftgröße.
+   Erzwingt 16px nur auf schmalen Viewports, damit Tailwinds text-sm/text-xs am Desktop bleibt. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
