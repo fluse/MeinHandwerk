@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/core/components/Button'
+import { InstallAppSection } from '@/core/components/InstallAppSection'
 import { useCompanySettings } from '../hooks/useCompanySettings'
 import { useUpdateCompanySettings } from '../hooks/useUpdateCompanySettings'
 import {
@@ -140,5 +141,10 @@ export function GeneralSettingsPage() {
     return <p className="text-sm text-danger">Einstellungen konnten nicht geladen werden.</p>
   }
 
-  return <GeneralSettingsForm key={settings.id} settings={settings} />
+  return (
+    <div className="flex flex-col gap-4">
+      <GeneralSettingsForm key={settings.id} settings={settings} />
+      <InstallAppSection />
+    </div>
+  )
 }
