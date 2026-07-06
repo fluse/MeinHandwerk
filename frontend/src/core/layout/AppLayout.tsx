@@ -20,8 +20,8 @@ export function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-3">
+    <div className="grid h-dvh w-full grid-rows-[auto_1fr_auto] overflow-x-hidden bg-page">
+      <header className="z-20 flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-3">
         <Link
           to="/"
           className="flex min-w-0 items-center gap-2 truncate text-base font-semibold text-ink no-underline"
@@ -63,7 +63,14 @@ export function AppLayout() {
           </div>
         )}
       </header>
-      <main className={fullBleed ? 'min-w-0 flex-1' : 'min-w-0 flex-1 p-4 sm:p-6'}>
+      <main
+        id="app-scroll-area"
+        className={
+          fullBleed
+            ? 'min-h-0 min-w-0 overflow-y-auto overflow-x-hidden'
+            : 'min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6'
+        }
+      >
         <Outlet />
       </main>
       <BottomNav />

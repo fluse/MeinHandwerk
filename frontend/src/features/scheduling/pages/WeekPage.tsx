@@ -23,7 +23,7 @@ export function WeekPage() {
   const week = iso(weekStart)
 
   return (
-    <div className="pb-16">
+    <div>
       <div className="px-4 pt-4 sm:px-6 sm:pt-6">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h1 className="text-lg font-bold text-ink">Wochenübersicht</h1>

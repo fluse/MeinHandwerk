@@ -21,7 +21,7 @@ export function EventsPage() {
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 
   return (
-    <div className="mx-auto max-w-lg pb-16">
+    <div className="mx-auto max-w-lg">
       <h1 className="mb-3 text-lg font-bold text-ink">Events & Termine</h1>
 
       {canPlan && (

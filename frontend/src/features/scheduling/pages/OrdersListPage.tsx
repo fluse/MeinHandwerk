@@ -57,7 +57,7 @@ export function OrdersListPage() {
   const dates = Array.from(grouped.keys()).sort()
 
   return (
-    <div className="mx-auto max-w-lg pb-16">
+    <div className="mx-auto max-w-lg">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h1 className="text-lg font-bold text-ink">Aufträge</h1>
         {canPlan && (

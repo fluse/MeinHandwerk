@@ -66,7 +66,7 @@ export function BottomNav() {
   return (
     <>
       <nav
-        className="sticky bottom-0 z-20 border-t border-border bg-card"
+        className="z-20 border-t border-border bg-card"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="mx-auto flex max-w-lg">

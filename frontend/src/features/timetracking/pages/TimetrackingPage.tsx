@@ -160,7 +160,7 @@ export function TimetrackingPage() {
     })
 
     return (
-      <div className="mx-auto max-w-lg pb-16">
+      <div className="mx-auto max-w-lg">
         <h1 className="mb-3 text-lg font-bold text-ink">Arbeitszeiten</h1>
         {nav}
         <div className="mt-3 flex items-center gap-2.5">
@@ -264,7 +264,7 @@ export function TimetrackingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg pb-16">
+    <div className="mx-auto max-w-lg">
       <h1 className="mb-3 text-lg font-bold text-ink">Arbeitszeiten</h1>
       {nav}
       <div className="mt-3">

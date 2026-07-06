@@ -54,7 +54,7 @@ export function EmployeeWeekPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg pb-16">
+    <div className="mx-auto max-w-lg">
       <div className="mb-3 flex items-center gap-2">
         <RoleIcon role={member.role} size={26} />
         <h1 className="text-lg font-bold text-ink">{member.name}</h1>

@@ -25,7 +25,7 @@ export function PinboardPage() {
   )
 
   return (
-    <div className="mx-auto max-w-lg pb-16">
+    <div className="mx-auto max-w-lg">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h1 className="text-lg font-bold text-ink">Pinnwand</h1>
         <Button onClick={() => setComposerOpen(true)}>

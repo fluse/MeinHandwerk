@@ -50,7 +50,7 @@ export function ProjectsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg pb-16">
+    <div className="mx-auto max-w-lg">
       <div className="mb-5 flex items-center justify-between gap-2">
         <h1 className="text-lg font-bold text-ink">Projekte</h1>
         {canPlan && (
