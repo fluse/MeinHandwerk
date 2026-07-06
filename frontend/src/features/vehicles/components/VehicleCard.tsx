@@ -7,6 +7,7 @@ import { MapsAppDialog } from '@/core/components/MapsAppDialog'
 import { colorVar } from '@/core/lib/cssVar'
 import { geocodeAddress } from '@/core/api/geocoding'
 import { useAssignVehicle, useUpdateVehicleLocation } from '../hooks/useVehicleMutations'
+import { ReleaseVehicleDialog } from './ReleaseVehicleDialog'
 import type { Vehicle } from '../types/vehicle'
 
 interface VehicleCardProps {
@@ -27,6 +28,7 @@ export function VehicleCard({
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [showMaps, setShowMaps] = useState(false)
+  const [showRelease, setShowRelease] = useState(false)
   const [address, setAddress] = useState(v.address)
   const [geoError, setGeoError] = useState('')
   const assign = useAssignVehicle()
@@ -120,20 +122,12 @@ export function VehicleCard({
               </Button>
             )}
             {(isMine || canPlan) && !isFree && (
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => assign.mutate({ id: v.id, userId: null })}
-              >
+              <Button variant="secondary" className="flex-1" onClick={() => setShowRelease(true)}>
                 Freigeben
               </Button>
             )}
             {mapsHref && (
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setShowMaps(true)}
-              >
+              <Button variant="secondary" className="flex-1" onClick={() => setShowMaps(true)}>
                 <Navigation size={16} className="mr-1.5 inline-block align-text-bottom" />
                 Navigation
               </Button>
@@ -211,9 +205,11 @@ export function VehicleCard({
 
       <MapsAppDialog
         open={showMaps}
-        target={{ address: v.address, lat: v.lat, lng: v.lng }}
+        target={{ address: v.address, lat: v.lat ?? undefined, lng: v.lng ?? undefined }}
         onClose={() => setShowMaps(false)}
       />
+
+      <ReleaseVehicleDialog open={showRelease} vehicle={v} onClose={() => setShowRelease(false)} />
     </div>
   )
 }

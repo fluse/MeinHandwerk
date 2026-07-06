@@ -33,13 +33,14 @@ export function ProjectsPage() {
     )
 
   const scheduleProject = (p: Project) => {
-    const address = [p.street, [p.zip, p.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
     const params = new URLSearchParams({
       title: p.title || `Auftrag ${p.projnr || ''}`,
       date: p.date || todayISO(),
       client: p.client,
       phone: p.phone,
-      address,
+      street: p.street,
+      zip: p.zip,
+      city: p.city,
       desc: p.desc,
       note: p.projnr ? `TAIFUN-Nr: ${p.projnr}` : '',
       project: p.id,

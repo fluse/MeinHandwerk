@@ -10,7 +10,7 @@ import { useDeleteOrder } from '@/features/scheduling/hooks/useOrderMutations'
 import { OrderCard } from '@/features/scheduling/components/OrderCard'
 import { NotifySheet } from '@/features/scheduling/components/NotifySheet'
 import { CompleteOrderDialog } from '@/features/scheduling/components/CompleteOrderDialog'
-import type { Order } from '@/features/scheduling/types/order'
+import type { ScheduledOrder } from '@/features/scheduling/types/order'
 import { useEvents } from '@/features/events/hooks/useEvents'
 import { useDeleteEvent } from '@/features/events/hooks/useEventMutations'
 import { EventCard } from '@/features/events/components/EventCard'
@@ -59,24 +59,24 @@ export function HomePage() {
   const myOrdersTomorrow = myOrders.filter((o) => o.date === tomorrow)
   const deleteOrder = useDeleteOrder()
   const [openOrderIds, setOpenOrderIds] = useState<string[]>([])
-  const [notifyOrder, setNotifyOrder] = useState<Order | null>(null)
-  const [completeOrder, setCompleteOrder] = useState<Order | null>(null)
+  const [notifyOrder, setNotifyOrder] = useState<ScheduledOrder | null>(null)
+  const [completeOrder, setCompleteOrder] = useState<ScheduledOrder | null>(null)
   const toggleOrderOpen = (id: string) =>
     setOpenOrderIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
 
-  const renderOrders = (list: Order[], emptyText: string) =>
+  const renderOrders = (list: ScheduledOrder[], emptyText: string) =>
     list.length === 0 ? (
       <p className="mb-3 text-sm text-muted">{emptyText}</p>
     ) : (
       list.map((o) => (
         <OrderCard
-          key={o.id}
+          key={o.blockId}
           order={o}
           roster={roster}
           currentUserId={userId}
           canPlan={canPlan}
-          isOpen={openOrderIds.includes(o.id)}
-          onToggle={() => toggleOrderOpen(o.id)}
+          isOpen={openOrderIds.includes(o.blockId)}
+          onToggle={() => toggleOrderOpen(o.blockId)}
           onEdit={() => navigate(`/orders/${o.id}/edit`)}
           onDelete={() => deleteOrder.mutate(o.id)}
           onNotify={() => setNotifyOrder(o)}

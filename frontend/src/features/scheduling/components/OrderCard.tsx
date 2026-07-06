@@ -6,9 +6,11 @@ import {
   Circle,
   ClipboardList,
   FileText,
+  LogOut,
   MapPin,
   Navigation,
   Phone,
+  PlayCircle,
   Plus,
   StickyNote,
   Trash2,
@@ -16,19 +18,23 @@ import {
   Wrench,
   X,
 } from 'lucide-react'
-import { surname, shortAddr } from '@/core/lib/format'
-import { fmtShort } from '@/core/lib/date'
+import { surname, formatAddress } from '@/core/lib/format'
+import { fmtShort, todayISO } from '@/core/lib/date'
+import { colorVar } from '@/core/lib/cssVar'
 import { Button } from '@/core/components/Button'
 import { ConfirmDialog } from '@/core/components/ConfirmDialog'
 import { DetailRow } from '@/core/components/DetailRow'
 import { MapsAppDialog } from '@/core/components/MapsAppDialog'
 import { Overlay } from '@/core/components/Overlay'
 import type { RosterMember } from '@/core/api/roster'
+import { geocodeAddress } from '@/core/api/geocoding'
 import { useOrderPhotos, useUploadOrderPhoto, useDeleteOrderPhoto } from '../hooks/useOrderPhotos'
 import { useMarkOrderRead, useOrderReads } from '../hooks/useOrderReads'
 import { useCreateOrderCheckin, useOrderCheckins } from '@/core/hooks/useOrderCheckins'
 import { useReopenOrder } from '../hooks/useOrderMutations'
-import type { Order } from '../types/order'
+import { useVehicles } from '@/features/vehicles/hooks/useVehicles'
+import { useUpdateVehicleLocation } from '@/features/vehicles/hooks/useVehicleMutations'
+import type { ScheduledOrder } from '../types/order'
 import { TradeBadge } from './TradeBadge'
 import { StatusPill } from './StatusPill'
 
@@ -57,7 +63,7 @@ function OrderDetails({
 }
 
 interface OrderCardProps {
-  order: Order
+  order: ScheduledOrder
   roster: RosterMember[]
   currentUserId: string
   canPlan: boolean
@@ -97,6 +103,8 @@ export function OrderCard({
   const { data: checkins = [] } = useOrderCheckins(order.id, isOpen)
   const createCheckin = useCreateOrderCheckin(order.id)
   const reopen = useReopenOrder()
+  const { data: vehicles = [] } = useVehicles()
+  const updateVehicleLocation = useUpdateVehicleLocation()
   const fileRef = useRef<HTMLInputElement>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [showMaps, setShowMaps] = useState(false)
@@ -107,12 +115,39 @@ export function OrderCard({
   const [arrivalPromptDue, setArrivalPromptDue] = useState(false)
 
   const isAssignedToMe = order.assigned.includes(currentUserId)
-  const mapsHref = order.address
-    ? `https://maps.google.com/?q=${encodeURIComponent(order.address)}`
-    : undefined
+  const address = formatAddress(order.street, order.zip, order.city)
+  const mapsHref = address ? `https://maps.google.com/?q=${encodeURIComponent(address)}` : undefined
 
   const myEnroute = checkins.find((c) => c.employee === currentUserId && c.type === 'unterwegs')
   const myArrived = checkins.find((c) => c.employee === currentUserId && c.type === 'angekommen')
+
+  // "Arbeit begonnen"/"verlassen" gelten für den ganzen Auftrag, nicht pro Mitarbeiter (siehe
+  // feature-order-flow-vehicle-position.md) – first-come-first-served, daher hier ohne
+  // currentUserId-Filter. isToday gatet alle vier Checkin-Buttons: ohne Termin heute (aktuell
+  // `orders.date`, solange es noch kein `order_blocks` gibt) ergibt kein Tap Sinn.
+  const isToday = order.date === todayISO()
+  const workCheckins = checkins.filter(
+    (c) => c.type === 'arbeit_begonnen' || c.type === 'verlassen',
+  )
+  const lastWork = workCheckins[workCheckins.length - 1]
+  const inArbeit = lastWork?.type === 'arbeit_begonnen'
+  const lastLeft = [...checkins].reverse().find((c) => c.type === 'verlassen')
+  const myLastArrived = [...checkins]
+    .reverse()
+    .find((c) => c.employee === currentUserId && c.type === 'angekommen')
+  const canStartWork =
+    isToday &&
+    isAssignedToMe &&
+    !inArbeit &&
+    myLastArrived != null &&
+    (!lastLeft || myLastArrived.created > lastLeft.created)
+  const canLeave = isToday && isAssignedToMe && inArbeit
+  const lastWorkEmployeeName = lastWork ? (nameById[lastWork.employee] ?? lastWork.employee) : ''
+  const lastWorkTime = lastWork
+    ? new Date(lastWork.created).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+    : ''
+
+  const myVehicle = vehicles.find((v) => v.assignedTo === currentUserId)
 
   // Setzt arrivalPromptDue zurück, sobald sich der relevante Checkin ändert (neuer Auftrag,
   // Checkins noch nicht geladen, ...). Zustandsanpassung während des Renderns statt in einem
@@ -163,6 +198,42 @@ export function OrderCard({
   const handleArrived = () => {
     createCheckin.mutate({ employeeId: currentUserId, type: 'angekommen' })
     setDismissedArrivalPrompt(true)
+
+    // Fahrzeugposition transparent als Nebeneffekt des Ankunfts-Taps mitführen (siehe
+    // feature-order-flow-vehicle-position.md): nur falls dem Mitarbeiter ein Fahrzeug zugeordnet
+    // ist. Kein Fehlerdialog bei Ablehnung/Fehler – der Checkin selbst ist wichtiger, per
+    // Geocoding der Auftragsadresse wird trotzdem versucht, wenigstens die Adresse zu setzen.
+    if (myVehicle) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          updateVehicleLocation.mutate({
+            id: myVehicle.id,
+            location: {
+              address,
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+            },
+          })
+        },
+        () => {
+          geocodeAddress(address).then((result) => {
+            if (!result) return
+            updateVehicleLocation.mutate({
+              id: myVehicle.id,
+              location: { address, lat: result.lat, lng: result.lng },
+            })
+          })
+        },
+      )
+    }
+  }
+
+  const handleStartWork = () => {
+    createCheckin.mutate({ employeeId: currentUserId, type: 'arbeit_begonnen' })
+  }
+
+  const handleLeave = () => {
+    createCheckin.mutate({ employeeId: currentUserId, type: 'verlassen' })
   }
 
   const onFiles = (files: FileList | null) => {
@@ -188,11 +259,22 @@ export function OrderCard({
             {surname(order.client) || order.title}
           </div>
           <div className="truncate text-xs text-muted">
-            {shortAddr(order.address) || '—'}
+            {order.street || '—'}
             {order.from ? ` · ${fmtShort(new Date(order.date + 'T00:00:00'))} ${order.from}` : ''}
           </div>
         </div>
         <TradeBadge trade={order.trade} />
+        {inArbeit && order.status === 'offen' && (
+          <span
+            className="flex-none whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-bold"
+            style={{
+              background: colorVar('pstatus-eingeplant-bg'),
+              color: colorVar('pstatus-eingeplant-fg'),
+            }}
+          >
+            In Arbeit
+          </span>
+        )}
         <StatusPill status={order.status} />
       </button>
 
@@ -213,16 +295,7 @@ export function OrderCard({
               value={order.phone}
               href={order.phone ? `tel:${order.phone.replace(/\s/g, '')}` : undefined}
             />
-            <DetailRow
-              icon={MapPin}
-              label="Adresse"
-              value={order.address}
-              href={
-                order.address
-                  ? `https://maps.google.com/?q=${encodeURIComponent(order.address)}`
-                  : undefined
-              }
-            />
+            <DetailRow icon={MapPin} label="Adresse" value={address} href={mapsHref} />
             <DetailRow icon={Wrench} label="Material" value={order.material} />
             <DetailRow icon={ClipboardList} label="Leistung" value={order.desc} />
             <DetailRow icon={StickyNote} label="Notiz" value={order.note} />
@@ -308,13 +381,13 @@ export function OrderCard({
             )}
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
-            {mapsHref && isAssignedToMe && !myEnroute && (
+            {mapsHref && isToday && isAssignedToMe && !myEnroute && (
               <Button variant="secondary" className="flex-1" onClick={handleEnroute}>
                 <Navigation size={16} className="mr-1.5 inline-block align-text-bottom" />
                 Mache mich jetzt auf den Weg zum Kunden
               </Button>
             )}
-            {isAssignedToMe && myEnroute && !myArrived && (
+            {isToday && isAssignedToMe && myEnroute && !myArrived && (
               <Button
                 variant="secondary"
                 className="flex-1"
@@ -322,6 +395,18 @@ export function OrderCard({
               >
                 <MapPin size={16} className="mr-1.5 inline-block align-text-bottom" />
                 Bin jetzt beim Kunden angekommen
+              </Button>
+            )}
+            {canStartWork && (
+              <Button variant="secondary" className="flex-1" onClick={handleStartWork}>
+                <PlayCircle size={16} className="mr-1.5 inline-block align-text-bottom" />
+                Arbeit jetzt beginnen
+              </Button>
+            )}
+            {canLeave && (
+              <Button variant="secondary" className="flex-1" onClick={handleLeave}>
+                <LogOut size={16} className="mr-1.5 inline-block align-text-bottom" />
+                Auftragsort jetzt verlassen
               </Button>
             )}
             {mapsHref && !isAssignedToMe && (
@@ -335,6 +420,13 @@ export function OrderCard({
               Arbeitsrapport
             </Button>
           </div>
+          {isToday && isAssignedToMe && lastWork && (
+            <div className="mt-1.5 text-xs text-muted">
+              {inArbeit
+                ? `Arbeit begonnen um ${lastWorkTime} (von ${lastWorkEmployeeName})`
+                : `Auftragsort verlassen um ${lastWorkTime} (von ${lastWorkEmployeeName})`}
+            </div>
+          )}
 
           {canPlan && order.assigned.length > 0 && (
             <div className="mt-3 rounded-lg border border-border bg-page px-3 py-2">
@@ -418,11 +510,7 @@ export function OrderCard({
         }}
       />
 
-      <MapsAppDialog
-        open={showMaps}
-        target={{ address: order.address }}
-        onClose={() => setShowMaps(false)}
-      />
+      <MapsAppDialog open={showMaps} target={{ address }} onClose={() => setShowMaps(false)} />
 
       <ConfirmDialog
         open={showArrivalPrompt}

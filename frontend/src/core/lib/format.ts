@@ -2,8 +2,9 @@ export function surname(name?: string): string {
   return name ? name.trim() : ''
 }
 
-export function shortAddr(address?: string): string {
-  return address ? address.split(',')[0].trim() : ''
+/** Baut "Straße, PLZ Ort" aus den getrennten Adressfeldern (Order/Customer/Site). */
+export function formatAddress(street?: string, zip?: string, city?: string): string {
+  return [street, [zip, city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
 }
 
 interface OrderMessageInput {
@@ -12,7 +13,9 @@ interface OrderMessageInput {
   from?: string
   to?: string
   client?: string
-  address?: string
+  street?: string
+  zip?: string
+  city?: string
   phone?: string
   desc?: string
 }
@@ -29,7 +32,8 @@ export function orderMsg(o: OrderMessageInput): string {
   })
   lines.push(o.from ? `${day}, ${o.from}${o.to ? `–${o.to}` : ''} Uhr` : day)
   if (o.client) lines.push(`Kunde: ${o.client}`)
-  if (o.address) lines.push(`Adresse: ${o.address}`)
+  const address = formatAddress(o.street, o.zip, o.city)
+  if (address) lines.push(`Adresse: ${address}`)
   if (o.phone) lines.push(`Tel: ${o.phone}`)
   if (o.desc) lines.push(`Aufgabe: ${o.desc}`)
   lines.push('— Hahn Energie & Bau')

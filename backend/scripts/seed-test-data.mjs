@@ -282,9 +282,28 @@ async function main() {
 
   // 6) Aufträge – Vergangenheit (erledigt), heute (verschiedene Uhrzeiten/Gewerke,
   // inkl. Überlappung für die Zeitstrahl-Spuren) und Zukunft (inkl. ohne feste Zeit).
+  // Aufträge selbst tragen kein date/from/to/assigned mehr (siehe order_blocks-Migration) – ORD()
+  // beschreibt weiterhin genau ein Zeitfenster pro Auftrag, ensureOrder() legt Auftrag + genau
+  // einen order_blocks-Eintrag dafür an.
   const ORD = (o) => ({ status: 'offen', assigned: [], from: '', to: '', ...o })
 
-  await ensureOne('orders', 'title = "Heizungswartung Müller Bau"', ORD({
+  async function ensureOrder(filter, o) {
+    const { date, from, to, assigned, ...orderFields } = o
+    const order = await ensureOne('orders', filter, orderFields)
+    await ensureOne('order_blocks', `order = "${order.id}" && date = "${date}"`, {
+      order: order.id,
+      date,
+      from: from || '',
+      to: to || '',
+      assigned,
+    })
+    // Bequemlichkeit für ensureRapport() unten, das order.date für rapports.date braucht –
+    // orders selbst hat das Feld nicht mehr, wird hier nicht persistiert.
+    order.date = date
+    return order
+  }
+
+  await ensureOrder('title = "Heizungswartung Müller Bau"', ORD({
     title: 'Heizungswartung Müller Bau',
     trade: 'heizung',
     date: iso(today),
@@ -292,11 +311,13 @@ async function main() {
     to: '11:00',
     client: 'Müller Bau GmbH',
     phone: '0211 1234567',
-    address: 'Hauptstraße 12, 40210 Düsseldorf',
+    street: 'Hauptstraße 12',
+    zip: '40210',
+    city: 'Düsseldorf',
     desc: 'Jährliche Wartung der Heizungsanlage.',
     assigned: [m1?.id].filter(Boolean),
   }))
-  await ensureOne('orders', 'title = "Wasserhahn tauschen Weber"', ORD({
+  await ensureOrder('title = "Wasserhahn tauschen Weber"', ORD({
     title: 'Wasserhahn tauschen Weber',
     trade: 'sanitaer',
     date: iso(today),
@@ -304,10 +325,12 @@ async function main() {
     to: '10:30',
     client: 'Fam. Weber',
     phone: '0221 4455667',
-    address: 'Feldweg 3, 50667 Köln',
+    street: 'Feldweg 3',
+    zip: '50667',
+    city: 'Köln',
     assigned: [m2?.id].filter(Boolean),
   }))
-  await ensureOne('orders', 'title = "Elektrocheck Gasthaus Sonne"', ORD({
+  await ensureOrder('title = "Elektrocheck Gasthaus Sonne"', ORD({
     title: 'Elektrocheck Gasthaus Sonne',
     trade: 'elektro',
     date: iso(today),
@@ -315,94 +338,112 @@ async function main() {
     to: '12:00',
     client: 'Gasthaus Sonne',
     phone: '0711 1122334',
-    address: 'Marktplatz 1, 70173 Stuttgart',
+    street: 'Marktplatz 1',
+    zip: '70173',
+    city: 'Stuttgart',
     desc: 'Überlappt bewusst mit der Heizungswartung, um die Spuren-Darstellung zu testen.',
     assigned: [m1?.id].filter(Boolean),
   }))
-  await ensureOne('orders', 'title = "Klimaanlage prüfen Schmidt"', ORD({
+  await ensureOrder('title = "Klimaanlage prüfen Schmidt"', ORD({
     title: 'Klimaanlage prüfen Schmidt',
     trade: 'klima',
     date: iso(today),
     client: 'Schmidt Immobilien',
     phone: '0721 9876543',
-    address: 'Kaiserallee 5, 76133 Karlsruhe',
+    street: 'Kaiserallee 5',
+    zip: '76133',
+    city: 'Karlsruhe',
     note: 'Ohne feste Uhrzeit – Testfall für "ohne Zeit".',
     assigned: [helfer.id],
   }))
-  await ensureOne('orders', 'title = "Trockenbauwand einziehen"', ORD({
+  await ensureOrder('title = "Trockenbauwand einziehen"', ORD({
     title: 'Trockenbauwand einziehen',
     trade: 'innenausbau',
     date: iso(today),
     from: '13:00',
     to: '15:00',
     client: 'Müller Bau GmbH',
-    address: 'Hauptstraße 12, 40210 Düsseldorf',
+    street: 'Hauptstraße 12',
+    zip: '40210',
+    city: 'Düsseldorf',
     assigned: [m2?.id].filter(Boolean),
   }))
   if (chef) {
-    await ensureOne('orders', 'title = "Baustellenbesichtigung Weber"', ORD({
+    await ensureOrder('title = "Baustellenbesichtigung Weber"', ORD({
       title: 'Baustellenbesichtigung Weber',
       trade: 'besichtigung',
       date: iso(today),
       from: '09:00',
       to: '12:00',
       client: 'Fam. Weber',
-      address: 'Feldweg 3, 50667 Köln',
+      street: 'Feldweg 3',
+      zip: '50667',
+      city: 'Köln',
       note: 'Chef-Termin – Testfall für eingeschränkte Sicht (Monteur/Helfer).',
       assigned: [chef.id],
     }))
   }
-  await ensureOne('orders', 'title = "Großauftrag Heizungstausch"', ORD({
+  await ensureOrder('title = "Großauftrag Heizungstausch"', ORD({
     title: 'Großauftrag Heizungstausch',
     trade: 'heizung',
     date: iso(addDays(today, 1)),
     from: '08:00',
     to: '16:00',
     client: 'Müller Bau GmbH',
-    address: 'Hauptstraße 12, 40210 Düsseldorf',
+    street: 'Hauptstraße 12',
+    zip: '40210',
+    city: 'Düsseldorf',
     assigned: [m1?.id, m2?.id].filter(Boolean),
   }))
-  await ensureOne('orders', 'title = "Wartung Klimaanlage Sonne"', ORD({
+  await ensureOrder('title = "Wartung Klimaanlage Sonne"', ORD({
     title: 'Wartung Klimaanlage Sonne',
     trade: 'klima',
     date: iso(addDays(today, 1)),
     from: '09:00',
     to: '10:00',
     client: 'Gasthaus Sonne',
-    address: 'Marktplatz 1, 70173 Stuttgart',
+    street: 'Marktplatz 1',
+    zip: '70173',
+    city: 'Stuttgart',
     assigned: [helfer.id],
   }))
-  await ensureOne('orders', 'title = "Elektroinstallation prüfen"', ORD({
+  await ensureOrder('title = "Elektroinstallation prüfen"', ORD({
     title: 'Elektroinstallation prüfen',
     trade: 'elektro',
     date: iso(addDays(today, 2)),
     client: 'Schmidt Immobilien',
-    address: 'Kaiserallee 5, 76133 Karlsruhe',
+    street: 'Kaiserallee 5',
+    zip: '76133',
+    city: 'Karlsruhe',
     note: 'Ohne feste Uhrzeit.',
     assigned: [m1?.id].filter(Boolean),
   }))
-  const heizungFruehjahrscheck = await ensureOne('orders', 'title = "Heizung Frühjahrscheck"', ORD({
+  const heizungFruehjahrscheck = await ensureOrder('title = "Heizung Frühjahrscheck"', ORD({
     title: 'Heizung Frühjahrscheck',
     trade: 'heizung',
     date: iso(addDays(today, -1)),
     from: '08:00',
     to: '12:00',
     client: 'Müller Bau GmbH',
-    address: 'Hauptstraße 12, 40210 Düsseldorf',
+    street: 'Hauptstraße 12',
+    zip: '40210',
+    city: 'Düsseldorf',
     assigned: [m1?.id].filter(Boolean),
     status: 'erledigt',
     closedBy: m1?.id ?? '',
     closedAt: new Date().toISOString(),
     rapportSigned: true,
   }))
-  const rohrbruchNotdienst = await ensureOne('orders', 'title = "Rohrbruch Notdienst"', ORD({
+  const rohrbruchNotdienst = await ensureOrder('title = "Rohrbruch Notdienst"', ORD({
     title: 'Rohrbruch Notdienst',
     trade: 'sanitaer',
     date: iso(addDays(today, -1)),
     from: '13:00',
     to: '17:00',
     client: 'Fam. Weber',
-    address: 'Feldweg 3, 50667 Köln',
+    street: 'Feldweg 3',
+    zip: '50667',
+    city: 'Köln',
     assigned: [m2?.id].filter(Boolean),
     status: 'erledigt',
     closedBy: m2?.id ?? '',
@@ -410,14 +451,16 @@ async function main() {
     rapportSigned: false,
     rapportReason: 'Kunde bei Abholung nicht anwesend.',
   }))
-  const klimaanlageEndreinigung = await ensureOne('orders', 'title = "Klimaanlage Endreinigung"', ORD({
+  const klimaanlageEndreinigung = await ensureOrder('title = "Klimaanlage Endreinigung"', ORD({
     title: 'Klimaanlage Endreinigung',
     trade: 'klima',
     date: iso(addDays(today, -2)),
     from: '08:00',
     to: '10:00',
     client: 'Gasthaus Sonne',
-    address: 'Marktplatz 1, 70173 Stuttgart',
+    street: 'Marktplatz 1',
+    zip: '70173',
+    city: 'Stuttgart',
     assigned: [helfer.id],
     status: 'erledigt',
     closedBy: helfer.id,
@@ -427,7 +470,7 @@ async function main() {
 
   // Weitere Aufträge: mehr Kunden/Gewerke abgedeckt (u. a. "urlaub"/"krank" als Ganztagestermine),
   // mehr abgeschlossene Aufträge mit Rapport für die Rapport-Übersicht.
-  await ensureOne('orders', 'title = "Backofen-Wartung Bäckerei Klein"', ORD({
+  await ensureOrder('title = "Backofen-Wartung Bäckerei Klein"', ORD({
     title: 'Backofen-Wartung Bäckerei Klein',
     trade: 'elektro',
     date: iso(addDays(today, 3)),
@@ -435,11 +478,13 @@ async function main() {
     to: '08:00',
     client: 'Bäckerei Klein',
     phone: '0221 7788990',
-    address: 'Bahnhofstraße 22, 50667 Köln',
+    street: 'Bahnhofstraße 22',
+    zip: '50667',
+    city: 'Köln',
     desc: 'Jährliche E-Check-Wartung der Backöfen.',
     assigned: [m2?.id].filter(Boolean),
   }))
-  await ensureOne('orders', 'title = "Druckluftinstallation Zahnarztpraxis König"', ORD({
+  await ensureOrder('title = "Druckluftinstallation Zahnarztpraxis König"', ORD({
     title: 'Druckluftinstallation Zahnarztpraxis König',
     trade: 'innenausbau',
     date: iso(addDays(today, 4)),
@@ -447,21 +492,25 @@ async function main() {
     to: '17:00',
     client: 'Zahnarztpraxis Dr. König',
     phone: '0211 5544332',
-    address: 'Lindenallee 9, 40210 Düsseldorf',
+    street: 'Lindenallee 9',
+    zip: '40210',
+    city: 'Düsseldorf',
     assigned: [m1?.id, helfer?.id].filter(Boolean),
   }))
-  await ensureOne('orders', 'title = "Klimaanlage Hotel Rheinblick"', ORD({
+  await ensureOrder('title = "Klimaanlage Hotel Rheinblick"', ORD({
     title: 'Klimaanlage Hotel Rheinblick',
     trade: 'klima',
     date: iso(addDays(today, 6)),
     client: 'Hotel Rheinblick',
     phone: '0721 3344556',
-    address: 'Rheinuferweg 8, 76133 Karlsruhe',
+    street: 'Rheinuferweg 8',
+    zip: '76133',
+    city: 'Karlsruhe',
     note: 'Ohne feste Uhrzeit – nach Absprache mit der Rezeption.',
     assigned: [m2?.id].filter(Boolean),
   }))
   if (m1) {
-    await ensureOne('orders', `title = "Urlaub ${m1.name}"`, ORD({
+    await ensureOrder(`title = "Urlaub ${m1.name}"`, ORD({
       title: `Urlaub ${m1.name}`,
       trade: 'urlaub',
       date: iso(addDays(today, 7)),
@@ -470,35 +519,39 @@ async function main() {
     }))
   }
   if (m2) {
-    await ensureOne('orders', `title = "Krank ${m2.name}"`, ORD({
+    await ensureOrder(`title = "Krank ${m2.name}"`, ORD({
       title: `Krank ${m2.name}`,
       trade: 'krank',
       date: iso(today),
       assigned: [m2.id],
     }))
   }
-  await ensureOne('orders', 'title = "Wartung Sanitäranlagen Hotel Rheinblick"', ORD({
+  await ensureOrder('title = "Wartung Sanitäranlagen Hotel Rheinblick"', ORD({
     title: 'Wartung Sanitäranlagen Hotel Rheinblick',
     trade: 'sanitaer',
     date: iso(addDays(today, -3)),
     from: '07:00',
     to: '11:00',
     client: 'Hotel Rheinblick',
-    address: 'Rheinuferweg 8, 76133 Karlsruhe',
+    street: 'Rheinuferweg 8',
+    zip: '76133',
+    city: 'Karlsruhe',
     assigned: [m2?.id].filter(Boolean),
     status: 'erledigt',
     closedBy: m2?.id ?? '',
     closedAt: new Date().toISOString(),
     rapportSigned: true,
   }))
-  const backofenReparaturKlein = await ensureOne('orders', 'title = "Backofen-Reparatur Bäckerei Klein"', ORD({
+  const backofenReparaturKlein = await ensureOrder('title = "Backofen-Reparatur Bäckerei Klein"', ORD({
     title: 'Backofen-Reparatur Bäckerei Klein',
     trade: 'elektro',
     date: iso(addDays(today, -4)),
     from: '05:00',
     to: '07:30',
     client: 'Bäckerei Klein',
-    address: 'Bahnhofstraße 22, 50667 Köln',
+    street: 'Bahnhofstraße 22',
+    zip: '50667',
+    city: 'Köln',
     desc: 'Defekte Heizspirale im Hauptofen ausgetauscht.',
     assigned: [m1?.id].filter(Boolean),
     status: 'erledigt',

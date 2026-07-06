@@ -3,10 +3,10 @@ import { orderMsg, waNum } from '@/core/lib/format'
 import { Button } from '@/core/components/Button'
 import { Overlay } from '@/core/components/Overlay'
 import type { RosterMember } from '@/core/api/roster'
-import type { Order } from '../types/order'
+import type { ScheduledOrder } from '../types/order'
 
 interface NotifySheetProps {
-  order: Order
+  order: ScheduledOrder
   members: RosterMember[]
   onClose: () => void
 }

@@ -56,16 +56,18 @@ cronAdd('notifications-order-unstaffed', '0 5 * * *', () => {
 
   const tomorrow = isoDate(new Date(Date.now() + 24 * 60 * 60 * 1000))
   const admins = $app.findRecordsByFilter('users', "role = 'chef' || role = 'buero'", '', 0, 0)
+  // `date`/`assigned` liegen jetzt auf order_blocks statt auf orders – Block abfragen und den
+  // Auftrag darüber auflösen (statt eines Backreference-Filters über zwei Collections).
   $app
-    .findRecordsByFilter(
-      'orders',
-      'date = {:tomorrow} && status = "offen" && assigned = ""',
-      '',
-      0,
-      0,
-      { tomorrow }
-    )
-    .forEach((order) => {
+    .findRecordsByFilter('order_blocks', 'date = {:tomorrow} && assigned = ""', '', 0, 0, { tomorrow })
+    .forEach((block) => {
+      let order
+      try {
+        order = $app.findRecordById('orders', block.get('order'))
+      } catch (err) {
+        return
+      }
+      if (order.get('status') !== 'offen') return
       const title = order.get('title')
       admins.forEach((a) =>
         notify(a.id, 'order_unstaffed', `Auftrag "${title}" am ${tomorrow} ist noch niemandem zugewiesen.`, '/auftraege')

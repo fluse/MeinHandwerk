@@ -13,14 +13,15 @@ import { layoutTimeline } from '@/core/lib/calendarLayout'
 import { useRoster } from '@/core/hooks/useRoster'
 import { useOrders } from '../hooks/useOrders'
 import { useSelectedDate } from '../hooks/useSelectedDate'
-import { useDeleteOrder, useSetOrderTime } from '../hooks/useOrderMutations'
+import { useDeleteOrder } from '../hooks/useOrderMutations'
+import { useUpdateOrderBlockTime } from '../hooks/useOrderBlockMutations'
 import { DayNav } from '../components/DayNav'
 import { TimelineBlock } from '../components/TimelineBlock'
 import { OrderCard } from '../components/OrderCard'
 import { NotifySheet } from '../components/NotifySheet'
 import { CompleteOrderDialog } from '../components/CompleteOrderDialog'
 import { TradeIcon } from '../components/TradeBadge'
-import { TRADES, TRADE_VALUES, type Order } from '../types/order'
+import { TRADES, TRADE_VALUES, type ScheduledOrder } from '../types/order'
 
 const H0 = DAY_START_HOUR
 const H1 = DAY_END_HOUR
@@ -40,13 +41,16 @@ export function DayBoardPage() {
   const { data: roster = [] } = useRoster()
   const { date, setDate } = useSelectedDate()
   const { data: orders = [], isLoading } = useOrders(date, date)
-  const setOrderTime = useSetOrderTime()
+  const updateBlockTime = useUpdateOrderBlockTime()
   const deleteOrder = useDeleteOrder()
 
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [notifyOrder, setNotifyOrder] = useState<Order | null>(null)
-  const [completeOrder, setCompleteOrder] = useState<Order | null>(null)
-  const [pendingResize, setPendingResize] = useState<{ order: Order; newEnd: number } | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<ScheduledOrder | null>(null)
+  const [notifyOrder, setNotifyOrder] = useState<ScheduledOrder | null>(null)
+  const [completeOrder, setCompleteOrder] = useState<ScheduledOrder | null>(null)
+  const [pendingResize, setPendingResize] = useState<{
+    order: ScheduledOrder
+    newEnd: number
+  } | null>(null)
 
   const chefHidden = (role: string) => restricted && role === 'chef'
   const week = iso(mondayOf(new Date(`${date}T00:00:00`)))
@@ -175,7 +179,10 @@ export function DayBoardPage() {
           )}
 
           <div className="relative flex w-fit" ref={timelineRowRef}>
-            <div className="sticky left-0 z-20 w-11 flex-none bg-page" style={{ height: COLUMN_HEIGHT }}>
+            <div
+              className="sticky left-0 z-20 w-11 flex-none bg-page"
+              style={{ height: COLUMN_HEIGHT }}
+            >
               <div className="relative" style={{ top: TIMELINE_PAD, height: TOTAL_HEIGHT }}>
                 {hours.map((h) => (
                   <span
@@ -292,8 +299,8 @@ export function DayBoardPage() {
           confirmLabel="Verschieben"
           confirmVariant="primary"
           onConfirm={() => {
-            setOrderTime.mutate({
-              id: pendingResize.order.id,
+            updateBlockTime.mutate({
+              id: pendingResize.order.blockId,
               from: pendingResize.order.from,
               to: formatHour(pendingResize.newEnd, H0, H1),
             })

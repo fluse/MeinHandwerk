@@ -4,7 +4,7 @@ import { useAuth } from '@/core/auth/AuthProvider'
 import { colorVar } from '@/core/lib/cssVar'
 import { addDays, iso, fmtShort } from '@/core/lib/date'
 import { WD } from '@/core/lib/time'
-import { surname, shortAddr } from '@/core/lib/format'
+import { surname } from '@/core/lib/format'
 import { useRoster } from '@/core/hooks/useRoster'
 import { useOrders } from '../hooks/useOrders'
 import { useWeekStart } from '../hooks/useWeekStart'
@@ -122,7 +122,7 @@ export function WeekPage() {
                             }}
                           >
                             <div className="truncate font-bold">{surname(o.client) || o.title}</div>
-                            <div className="truncate opacity-90">{shortAddr(o.address)}</div>
+                            <div className="truncate opacity-90">{o.street}</div>
                           </div>
                         ))}
                       </Link>

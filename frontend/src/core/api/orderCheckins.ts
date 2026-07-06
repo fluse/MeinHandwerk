@@ -1,7 +1,7 @@
 import type { RecordModel } from 'pocketbase'
 import { pb } from '@/core/api/pocketbase'
 
-export type CheckinType = 'unterwegs' | 'angekommen'
+export type CheckinType = 'unterwegs' | 'angekommen' | 'arbeit_begonnen' | 'verlassen'
 
 export interface OrderCheckin {
   id: string

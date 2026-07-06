@@ -25,11 +25,12 @@ export function CustomersPage() {
   const orderForCustomer = (id: string) => {
     const c = customers.find((x) => x.id === id)
     if (!c) return
-    const address = [c.street, [c.zip, c.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
     const params = new URLSearchParams({
       client: c.name || c.contact,
       phone: c.phone,
-      address,
+      street: c.street,
+      zip: c.zip,
+      city: c.city,
       customer: c.id,
     })
     navigate(`/orders/new?${params.toString()}`)

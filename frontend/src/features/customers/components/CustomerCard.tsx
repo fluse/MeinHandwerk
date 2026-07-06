@@ -4,6 +4,7 @@ import { Building2, Mail, MapPin, Phone, Plus, StickyNote, Trash2, User } from '
 import { Button } from '@/core/components/Button'
 import { DetailRow } from '@/core/components/DetailRow'
 import { ConfirmDialog } from '@/core/components/ConfirmDialog'
+import { fmtShort } from '@/core/lib/date'
 import { useOrdersForCustomer, useProjectsForCustomer } from '@/core/hooks/useCustomerActivity'
 import { useSites } from '../hooks/useSites'
 import { useDeleteSite } from '../hooks/useSiteMutations'
@@ -194,13 +195,17 @@ function ActivityRow({
   item,
   onClick,
 }: {
-  item: { id: string; title: string; date: string }
+  item: { id: string; title: string; date: string; blockCount?: number }
   onClick?: () => void
 }) {
+  const dateLabel =
+    item.blockCount != null && item.blockCount > 1
+      ? `${item.blockCount} Termine, nächster: ${fmtShort(new Date(`${item.date}T00:00:00`))}`
+      : item.date
   const content = (
     <>
       <span className="min-w-0 flex-1 truncate">{item.title || '—'}</span>
-      {item.date && <span className="flex-none text-muted">{item.date}</span>}
+      {dateLabel && <span className="flex-none text-muted">{dateLabel}</span>}
     </>
   )
 

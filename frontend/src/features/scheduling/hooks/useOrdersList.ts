@@ -1,11 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { listOrders } from '../api/orders'
 
-export const ordersListQueryKey = ['orders', 'all'] as const
+export function ordersListQueryKey(sinceISO?: string) {
+  return ['orders', 'all', sinceISO ?? null] as const
+}
 
-export function useOrdersList() {
+/** `sinceISO` begrenzt das Datumsfenster (siehe OrdersListPage) – ohne Angabe werden alle
+ * Termine geladen ("ältere anzeigen"). */
+export function useOrdersList(sinceISO?: string) {
   return useQuery({
-    queryKey: ordersListQueryKey,
-    queryFn: listOrders,
+    queryKey: ordersListQueryKey(sinceISO),
+    queryFn: () => listOrders(sinceISO),
   })
 }

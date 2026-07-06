@@ -12,7 +12,7 @@ import { WeekNav } from '../components/WeekNav'
 import { OrderCard } from '../components/OrderCard'
 import { NotifySheet } from '../components/NotifySheet'
 import { CompleteOrderDialog } from '../components/CompleteOrderDialog'
-import type { Order } from '../types/order'
+import type { ScheduledOrder } from '../types/order'
 import { useDeleteOrder } from '../hooks/useOrderMutations'
 
 export function EmployeeWeekPage() {
@@ -26,8 +26,8 @@ export function EmployeeWeekPage() {
   const deleteOrder = useDeleteOrder()
 
   const [openIds, setOpenIds] = useState<string[]>([])
-  const [notifyOrder, setNotifyOrder] = useState<Order | null>(null)
-  const [completeOrder, setCompleteOrder] = useState<Order | null>(null)
+  const [notifyOrder, setNotifyOrder] = useState<ScheduledOrder | null>(null)
+  const [completeOrder, setCompleteOrder] = useState<ScheduledOrder | null>(null)
 
   const member = roster.find((m) => m.id === userId)
   const week = iso(weekStart)
@@ -105,13 +105,13 @@ export function EmployeeWeekPage() {
             ) : (
               dayOrders.map((o) => (
                 <OrderCard
-                  key={o.id}
+                  key={o.blockId}
                   order={o}
                   roster={roster}
                   currentUserId={user?.id ?? ''}
                   canPlan={canPlan}
-                  isOpen={openIds.includes(o.id)}
-                  onToggle={() => toggleOpen(o.id)}
+                  isOpen={openIds.includes(o.blockId)}
+                  onToggle={() => toggleOpen(o.blockId)}
                   onEdit={() => navigate(`/orders/${o.id}/edit?week=${week}`)}
                   onDelete={() => deleteOrder.mutate(o.id)}
                   onNotify={() => setNotifyOrder(o)}

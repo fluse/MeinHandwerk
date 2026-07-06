@@ -1,22 +1,20 @@
 import type { RecordModel } from 'pocketbase'
 import { pb } from '@/core/api/pocketbase'
-import type { Order, OrderFormInput } from '../types/order'
+import type { Order, OrderFormInput, ScheduledOrder } from '../types/order'
 
 function toOrder(r: RecordModel): Order {
   return {
     id: r.id,
     title: r.title,
     trade: r.trade,
-    date: r.date,
-    from: r.from ?? '',
-    to: r.to ?? '',
     client: r.client ?? '',
     phone: r.phone ?? '',
-    address: r.address ?? '',
+    street: r.street ?? '',
+    zip: r.zip ?? '',
+    city: r.city ?? '',
     material: r.material ?? '',
     desc: r.desc ?? '',
     note: r.note ?? '',
-    assigned: r.assigned ?? [],
     status: r.status,
     project: r.project ?? '',
     customer: r.customer ?? '',
@@ -30,22 +28,37 @@ function toOrder(r: RecordModel): Order {
   }
 }
 
-export async function listOrdersInRange(fromISO: string, toISO: string): Promise<Order[]> {
-  const records = await pb.collection('orders').getFullList({
-    filter: pb.filter('date >= {:from} && date <= {:to}', { from: fromISO, to: toISO }),
-    sort: 'from',
-    expand: 'customer',
-  })
-  return records.map(toOrder)
+/** Eine order_blocks-Zeile (mit expandiertem `order`+`order.customer`) zu einem "Auftritt" des
+ * Auftrags an diesem Tag zusammenbauen. */
+function toScheduledOrder(r: RecordModel): ScheduledOrder {
+  return {
+    ...toOrder(r.expand?.order ?? {}),
+    blockId: r.id,
+    date: r.date,
+    from: r.from ?? '',
+    to: r.to ?? '',
+    assigned: r.assigned ?? [],
+  }
 }
 
-/** Alle Aufträge unabhängig vom Datum – für die kalenderfreie Auftragsliste. */
-export async function listOrders(): Promise<Order[]> {
-  const records = await pb.collection('orders').getFullList({
+export async function listOrdersInRange(fromISO: string, toISO: string): Promise<ScheduledOrder[]> {
+  const records = await pb.collection('order_blocks').getFullList({
+    filter: pb.filter('date >= {:from} && date <= {:to}', { from: fromISO, to: toISO }),
     sort: 'date,from',
-    expand: 'customer',
+    expand: 'order,order.customer',
   })
-  return records.map(toOrder)
+  return records.map(toScheduledOrder)
+}
+
+/** Alle Termine ab (optional) einem Startdatum – für die kalenderfreie Auftragsliste, die
+ * standardmäßig nicht unbegrenzt in die Vergangenheit lädt (siehe OrdersListPage). */
+export async function listOrders(sinceISO?: string): Promise<ScheduledOrder[]> {
+  const records = await pb.collection('order_blocks').getFullList({
+    filter: sinceISO ? pb.filter('date >= {:since}', { since: sinceISO }) : '',
+    sort: 'date,from',
+    expand: 'order,order.customer',
+  })
+  return records.map(toScheduledOrder)
 }
 
 export async function getOrder(id: string): Promise<Order> {
@@ -56,16 +69,14 @@ function toPayload(input: OrderFormInput) {
   return {
     title: input.title,
     trade: input.trade,
-    date: input.date,
-    from: input.from || '',
-    to: input.to || '',
     client: input.client ?? '',
     phone: input.phone ?? '',
-    address: input.address ?? '',
+    street: input.street ?? '',
+    zip: input.zip ?? '',
+    city: input.city ?? '',
     material: input.material ?? '',
     desc: input.desc ?? '',
     note: input.note ?? '',
-    assigned: input.assigned,
     project: input.project ?? '',
     customer: input.customer ?? '',
     site: input.site ?? '',
@@ -84,11 +95,6 @@ export async function updateOrder(id: string, input: OrderFormInput): Promise<Or
 
 export async function deleteOrder(id: string): Promise<void> {
   await pb.collection('orders').delete(id)
-}
-
-export async function setOrderTime(id: string, from: string, to: string): Promise<Order> {
-  const record = await pb.collection('orders').update(id, { from, to })
-  return toOrder(record)
 }
 
 interface CloseOrderInput {

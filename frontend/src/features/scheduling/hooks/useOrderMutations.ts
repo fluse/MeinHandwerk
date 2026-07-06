@@ -1,12 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  closeOrder,
-  createOrder,
-  deleteOrder,
-  reopenOrder,
-  setOrderTime,
-  updateOrder,
-} from '../api/orders'
+import { closeOrder, createOrder, deleteOrder, reopenOrder, updateOrder } from '../api/orders'
 import type { OrderFormInput } from '../types/order'
 
 function useInvalidateOrders() {
@@ -44,15 +37,6 @@ export function useDeleteOrder() {
   const invalidate = useInvalidateOrdersAndCustomerActivity()
   return useMutation({
     mutationFn: deleteOrder,
-    onSuccess: invalidate,
-  })
-}
-
-export function useSetOrderTime() {
-  const invalidate = useInvalidateOrders()
-  return useMutation({
-    mutationFn: ({ id, from, to }: { id: string; from: string; to: string }) =>
-      setOrderTime(id, from, to),
     onSuccess: invalidate,
   })
 }
