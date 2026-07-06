@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
+import { useOrder } from '@/features/scheduling/hooks/useOrder'
 import { useRapport } from '../hooks/useRapport'
 import { useRapportMaterials } from '../hooks/useRapportMaterials'
 import { RapportForm } from '../components/RapportForm'
@@ -6,13 +7,14 @@ import { RapportForm } from '../components/RapportForm'
 export function RapportFormPage() {
   const { orderId, rapportId } = useParams<{ orderId: string; rapportId: string }>()
   const navigate = useNavigate()
+  const { data: order, isLoading: loadingOrder } = useOrder(orderId)
   const { data: rapport, isLoading: loadingRapport } = useRapport(rapportId)
   const { data: materials = [], isLoading: loadingMaterials } = useRapportMaterials(
     rapportId ?? '',
     !!rapportId,
   )
 
-  if (rapportId && (loadingRapport || loadingMaterials)) {
+  if (loadingOrder || (rapportId && (loadingRapport || loadingMaterials))) {
     return <p className="text-sm text-muted">Rapport wird geladen…</p>
   }
 
@@ -26,6 +28,7 @@ export function RapportFormPage() {
       <RapportForm
         orderId={orderId ?? ''}
         rapport={rapport}
+        defaultSignedName={order?.client ?? ''}
         initialMaterials={materials}
         onDone={goBack}
         onCancel={goBack}

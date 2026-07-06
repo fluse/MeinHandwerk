@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react'
-import { Camera } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Camera, FileText, Plus } from 'lucide-react'
 import { surname } from '@/core/lib/format'
 import { Button } from '@/core/components/Button'
 import { Overlay } from '@/core/components/Overlay'
+import { useRapportsForOrder } from '@/features/timetracking/hooks/useRapports'
 import { useOrderPhotos, useUploadOrderPhoto } from '../hooks/useOrderPhotos'
 import { useCloseOrder } from '../hooks/useOrderMutations'
 import type { Order } from '../types/order'
@@ -14,13 +16,13 @@ interface CompleteOrderDialogProps {
 }
 
 export function CompleteOrderDialog({ order, currentUserId, onClose }: CompleteOrderDialogProps) {
+  const navigate = useNavigate()
   const { data: photos = [] } = useOrderPhotos(order.id)
+  const { data: rapports = [] } = useRapportsForOrder(order.id)
   const upload = useUploadOrderPhoto(order.id)
   const close = useCloseOrder()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const [signed, setSigned] = useState<boolean | null>(null)
-  const [reason, setReason] = useState('')
   const [noPhotoOk, setNoPhotoOk] = useState(false)
   const [error, setError] = useState('')
 
@@ -35,20 +37,16 @@ export function CompleteOrderDialog({ order, currentUserId, onClose }: CompleteO
       setError('Bitte Fotos hochladen oder „keine Fotos“ bestätigen.')
       return
     }
-    if (signed === null) {
-      setError('Bitte Rapportzettel-Frage beantworten.')
-      return
-    }
-    if (signed === false && !reason.trim()) {
-      setError('Bitte Begründung eingeben.')
+    if (rapports.length === 0) {
+      setError('Bitte zuerst einen Rapportzettel erstellen.')
       return
     }
     close.mutate(
       {
         id: order.id,
         closedBy: currentUserId,
-        rapportSigned: signed,
-        rapportReason: reason.trim(),
+        rapportSigned: true,
+        rapportReason: '',
       },
       { onSuccess: onClose },
     )
@@ -97,50 +95,40 @@ export function CompleteOrderDialog({ order, currentUserId, onClose }: CompleteO
         </label>
       )}
 
-      <div className="mb-2 mt-5 text-sm font-bold text-sage-text">
-        2 · Rapportzettel vom Kunden unterschrieben?
-      </div>
-      <div className="flex gap-2.5">
-        {(
-          [
-            [true, 'Ja'],
-            [false, 'Nein'],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => setSigned(value)}
-            className={`flex-1 rounded-xl border p-3 text-sm font-bold ${
-              signed === value
-                ? value
-                  ? 'border-status-erledigt-fg bg-status-erledigt-bg text-status-erledigt-fg'
-                  : 'border-danger bg-danger-bg text-danger'
-                : 'border-border text-muted'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {signed === false && (
-        <div className="mt-3">
-          <label className="mb-1 block text-xs font-medium text-muted" htmlFor="reason">
-            Begründung (Pflicht)
-          </label>
-          <textarea
-            id="reason"
-            className="min-h-[70px] w-full resize-y rounded-md border border-border px-3 py-2 text-sm focus:border-sage focus:outline-none"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Warum wurde nicht unterschrieben?"
-            autoFocus
-          />
+      <div className="mb-2 mt-5 text-sm font-bold text-sage-text">2 · Rapportzettel</div>
+      {rapports.length === 0 ? (
+        <Button
+          variant="secondary"
+          className="w-full"
+          onClick={() => navigate(`/orders/${order.id}/rapport/new`)}
+        >
+          <Plus size={16} className="mr-1.5 inline-block align-text-bottom" />
+          Rapportzettel erstellen
+        </Button>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          {rapports.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => navigate(`/orders/${order.id}/rapport/${r.id}/edit`)}
+              className="flex items-center gap-2 rounded-xl border border-border p-3 text-left text-sm font-bold"
+            >
+              <FileText size={16} className="text-sage-text" />
+              Rapportzettel vom{' '}
+              {new Date(`${r.date}T00:00:00`).toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              })}
+            </button>
+          ))}
         </div>
       )}
 
       {error && <p className="mt-2 text-xs text-danger">{error}</p>}
+
+      <hr className="mt-5 border-border" />
 
       <div className="mt-5 flex gap-2.5">
         <Button variant="secondary" className="flex-1" onClick={onClose}>

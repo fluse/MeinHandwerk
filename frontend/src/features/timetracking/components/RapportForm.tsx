@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, X } from 'lucide-react'
 import { useAuth } from '@/core/auth/AuthProvider'
 import { Button } from '@/core/components/Button'
 import { SignaturePad } from '@/core/components/SignaturePad'
@@ -27,6 +27,7 @@ function newLine(): MaterialLine {
 interface RapportFormProps {
   orderId: string
   rapport?: Rapport
+  defaultSignedName?: string
   initialMaterials: RapportMaterial[]
   onDone: () => void
   onCancel: () => void
@@ -35,6 +36,7 @@ interface RapportFormProps {
 export function RapportForm({
   orderId,
   rapport,
+  defaultSignedName = '',
   initialMaterials,
   onDone,
   onCancel,
@@ -63,12 +65,14 @@ export function RapportForm({
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<RapportFormInput>({
     resolver: zodResolver(rapportFormSchema),
     defaultValues: rapport
       ? { date: rapport.date, text: rapport.text, signedName: rapport.signedName }
-      : { date: todayISO(), text: '', signedName: '' },
+      : { date: todayISO(), text: '', signedName: defaultSignedName },
   })
 
   const setLine = (id: string, patch: Partial<MaterialLine>) =>
@@ -217,12 +221,24 @@ export function RapportForm({
         <label className="text-xs font-medium text-muted" htmlFor="signedName">
           Name des Unterzeichners
         </label>
-        <input
-          id="signedName"
-          className={`${fieldClass} w-full`}
-          placeholder="z. B. Herr Weber"
-          {...register('signedName')}
-        />
+        <div className="relative">
+          <input
+            id="signedName"
+            className={`${fieldClass} w-full pr-9`}
+            placeholder="z. B. Herr Weber"
+            {...register('signedName')}
+          />
+          {watch('signedName') && (
+            <button
+              type="button"
+              onClick={() => setValue('signedName', '', { shouldDirty: true })}
+              aria-label="Name löschen"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <p className="mt-2 text-xs text-danger">{error}</p>}

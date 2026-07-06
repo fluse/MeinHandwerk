@@ -31,6 +31,10 @@ import type { Order } from '../types/order'
 import { TradeBadge } from './TradeBadge'
 import { StatusPill } from './StatusPill'
 
+// Verzögerung, bevor der "Angekommen?"-Fallback-Dialog automatisch aufpoppt (siehe
+// feature-meldungen.md) – sonst würde er den Mitarbeiter direkt nach dem Losfahren stören.
+const ARRIVAL_PROMPT_DELAY_MS = 60 * 60 * 1000
+
 interface OrderCardProps {
   order: Order
   roster: RosterMember[]
@@ -73,6 +77,10 @@ export function OrderCard({
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [showMaps, setShowMaps] = useState(false)
   const [dismissedArrivalPrompt, setDismissedArrivalPrompt] = useState(false)
+  // Ob die 60-Minuten-Verzögerung für den Ankunfts-Fallback (siehe unten) abgelaufen ist. Wird
+  // nur per Timer in einem Effect gesetzt, nie über Date.now() direkt im Render berechnet
+  // (React-Compiler-Regel: keine unreinen Aufrufe während des Renderns).
+  const [arrivalPromptDue, setArrivalPromptDue] = useState(false)
 
   const isAssignedToMe = order.assigned.includes(currentUserId)
   const mapsHref = order.address
@@ -82,11 +90,23 @@ export function OrderCard({
   const myEnroute = checkins.find((c) => c.employee === currentUserId && c.type === 'unterwegs')
   const myArrived = checkins.find((c) => c.employee === currentUserId && c.type === 'angekommen')
 
-  // Fallback für vergessene Ankunftsmeldung: wegklickbar, taucht aber bei jedem erneuten Öffnen
-  // der Auftragskarte wieder auf, solange keine Ankunft bestätigt wurde (siehe feature-meldungen.md).
-  // Zustandsanpassung während des Renderns statt in einem Effect (React-Muster für "State beim
-  // Ändern einer externen Bedingung zurücksetzen", vermeidet kaskadierende Effect-Renders).
-  const arrivalPending = isOpen && isAssignedToMe && Boolean(myEnroute) && !myArrived
+  // Setzt arrivalPromptDue zurück, sobald sich der relevante Checkin ändert (neuer Auftrag,
+  // Checkins noch nicht geladen, ...). Zustandsanpassung während des Renderns statt in einem
+  // Effect (React-Muster für "State beim Ändern einer externen Bedingung zurücksetzen").
+  const enrouteKey = myEnroute?.id ?? ''
+  const [prevEnrouteKey, setPrevEnrouteKey] = useState(enrouteKey)
+  if (enrouteKey !== prevEnrouteKey) {
+    setPrevEnrouteKey(enrouteKey)
+    setArrivalPromptDue(false)
+  }
+
+  // Fallback für vergessene Ankunftsmeldung: poppt erst 60 Minuten nach "unterwegs" auf (sonst
+  // stört er den Mitarbeiter, der gerade erst losgefahren ist), ist wegklickbar, taucht aber bei
+  // jedem erneuten Öffnen der Auftragskarte wieder auf, solange keine Ankunft bestätigt wurde
+  // (siehe feature-meldungen.md). Der "Bin jetzt angekommen"-Button selbst ist davon unberührt
+  // und bleibt sofort nutzbar.
+  const arrivalPending =
+    isOpen && isAssignedToMe && Boolean(myEnroute) && !myArrived && arrivalPromptDue
   const [prevArrivalPending, setPrevArrivalPending] = useState(arrivalPending)
   if (arrivalPending !== prevArrivalPending) {
     setPrevArrivalPending(arrivalPending)
@@ -100,6 +120,16 @@ export function OrderCard({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
+
+  // Startet den 60-Minuten-Timer für den Ankunfts-Fallback. setState passiert nur im
+  // Timer-Callback, nicht synchron im Effect-Body – das ist das von React vorgesehene Muster
+  // für "auf ein externes Zeit-Ereignis reagieren" und löst keine kaskadierenden Renders aus.
+  useEffect(() => {
+    if (!isOpen || !isAssignedToMe || !myEnroute || myArrived || arrivalPromptDue) return
+    const remaining = ARRIVAL_PROMPT_DELAY_MS - (Date.now() - new Date(myEnroute.created).getTime())
+    const timer = setTimeout(() => setArrivalPromptDue(true), Math.max(remaining, 0))
+    return () => clearTimeout(timer)
+  }, [isOpen, isAssignedToMe, myEnroute, myArrived, arrivalPromptDue])
 
   const handleEnroute = () => {
     createCheckin.mutate({ employeeId: currentUserId, type: 'unterwegs' })
