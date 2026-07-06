@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { CalendarRange, ListChecks, Lock, Plus } from 'lucide-react'
 import { useAuth } from '@/core/auth/AuthProvider'
+import { ConfirmDialog } from '@/core/components/ConfirmDialog'
 import { Overlay } from '@/core/components/Overlay'
 import { RoleIcon } from '@/core/components/RoleIcon'
 import { colorVar } from '@/core/lib/cssVar'
@@ -45,6 +46,7 @@ export function DayBoardPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [notifyOrder, setNotifyOrder] = useState<Order | null>(null)
   const [completeOrder, setCompleteOrder] = useState<Order | null>(null)
+  const [pendingResize, setPendingResize] = useState<{ order: Order; newEnd: number } | null>(null)
 
   const chefHidden = (role: string) => restricted && role === 'chef'
   const week = iso(mondayOf(new Date(`${date}T00:00:00`)))
@@ -219,13 +221,7 @@ export function DayBoardPage() {
                         dayEndHour={H1}
                         canResize={canPlan}
                         onClick={() => setSelectedOrder(entry.item)}
-                        onResize={(newEnd) =>
-                          setOrderTime.mutate({
-                            id: entry.item.id,
-                            from: entry.item.from,
-                            to: formatHour(newEnd, H0, H1),
-                          })
-                        }
+                        onResize={(newEnd) => setPendingResize({ order: entry.item, newEnd })}
                       />
                     ))}
                   </div>
@@ -286,6 +282,25 @@ export function DayBoardPage() {
             onRapport={() => navigate(`/orders/${selectedOrder.id}/rapports`)}
           />
         </Overlay>
+      )}
+
+      {pendingResize && (
+        <ConfirmDialog
+          open
+          title="Termin verschieben?"
+          description={`Möchtest du den Termin von ${surname(pendingResize.order.client) || pendingResize.order.title} wirklich auf ${formatHour(pendingResize.newEnd, H0, H1)} Uhr verschieben?`}
+          confirmLabel="Verschieben"
+          confirmVariant="primary"
+          onConfirm={() => {
+            setOrderTime.mutate({
+              id: pendingResize.order.id,
+              from: pendingResize.order.from,
+              to: formatHour(pendingResize.newEnd, H0, H1),
+            })
+            setPendingResize(null)
+          }}
+          onCancel={() => setPendingResize(null)}
+        />
       )}
 
       {notifyOrder && (
